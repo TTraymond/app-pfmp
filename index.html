@@ -1,0 +1,1088 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Cap PFMP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Unbounded:wght@600;800&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Carnet de route : chaque démarche est un tampon. Mobile d'abord : un écran par onglet + barre du bas ; PC : rail à gauche, liste + détail. */
+:root{
+  --bg:#EDF0F5; --surface:#FFFFFF; --surface-2:#E4E8F0; --ink:#13213A; --muted:#58657D; --line:#D3DAE5;
+  --accent:#2B50E8; --accent-ink:#FFFFFF; --accent-soft:#E3E9FD;
+  --stamp:#B8306F; --stamp-soft:#F8E4EE;
+  --ok:#17804F; --ok-soft:#DFF2E8; --warn:#A66200; --warn-soft:#FBEFD9; --danger:#C22F2F; --danger-soft:#FBE3E3;
+  --f-display:"Unbounded","Avenir Next","Segoe UI",system-ui,sans-serif;
+  --f-body:"Atkinson Hyperlegible","Segoe UI",system-ui,-apple-system,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --shadow:0 10px 30px rgba(19,33,58,.16);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0D1320; --surface:#161E2E; --surface-2:#1F293C; --ink:#E6EBF5; --muted:#9AA6BD; --line:#2A3550;
+  --accent:#8AA2FF; --accent-ink:#0D1320; --accent-soft:#1F2A4F;
+  --stamp:#F07AB0; --stamp-soft:#3A1D2D;
+  --ok:#58D29A; --ok-soft:#14332A; --warn:#F1B45C; --warn-soft:#3A2A12; --danger:#FF8075; --danger-soft:#3D1C1C;
+  --shadow:0 10px 30px rgba(0,0,0,.5); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0D1320; --surface:#161E2E; --surface-2:#1F293C; --ink:#E6EBF5; --muted:#9AA6BD; --line:#2A3550;
+  --accent:#8AA2FF; --accent-ink:#0D1320; --accent-soft:#1F2A4F;
+  --stamp:#F07AB0; --stamp-soft:#3A1D2D;
+  --ok:#58D29A; --ok-soft:#14332A; --warn:#F1B45C; --warn-soft:#3A2A12; --danger:#FF8075; --danger-soft:#3D1C1C;
+  --shadow:0 10px 30px rgba(0,0,0,.5); color-scheme:dark}
+
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5;overflow:hidden}
+body.dys{letter-spacing:.03em;word-spacing:.12em;line-height:1.75}
+*{box-sizing:border-box}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+h1,h2,h3{margin:0;text-wrap:balance}
+.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+
+#app{height:100%;display:grid;grid-template-columns:220px minmax(0,1fr);grid-template-rows:minmax(0,1fr)}
+.rail{background:var(--surface);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:18px 12px;gap:4px}
+.logo{font-family:var(--f-display);font-weight:800;font-size:1.15rem;letter-spacing:-.01em;padding:4px 10px 16px;display:flex;align-items:center;gap:8px}
+.logo i{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;border:2.5px solid var(--stamp);color:var(--stamp);font-style:normal;font-size:.7rem;transform:rotate(-12deg)}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav button{display:flex;align-items:center;gap:12px;border:0;background:transparent;border-radius:10px;padding:10px 12px;font-weight:700;color:var(--muted);text-align:left;position:relative}
+.nav button svg{width:22px;height:22px;flex:0 0 auto}
+.nav button[aria-current="page"]{background:var(--accent-soft);color:var(--ink)}
+.nav .dot{position:absolute;top:7px;left:28px;min-width:18px;height:18px;border-radius:9px;background:var(--danger);color:#fff;font-size:.68rem;display:grid;place-items:center;padding:0 4px;font-weight:700}
+.rail .foot{margin-top:auto;font-size:.78rem;color:var(--muted);padding:10px}
+
+.main{min-width:0;overflow:auto;padding:24px 28px 120px}
+.wrap{max-width:980px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+.pagehead{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.pagehead h1{font-family:var(--f-display);font-weight:800;font-size:clamp(1.35rem,3.4vw,1.9rem);letter-spacing:-.015em;line-height:1.15}
+.pagehead p{margin:4px 0 0;color:var(--muted)}
+.eyebrow{font-size:.74rem;text-transform:uppercase;letter-spacing:.1em;font-weight:700;color:var(--muted)}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.panel h2{font-family:var(--f-display);font-weight:600;font-size:1.02rem;letter-spacing:-.005em;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.panel h2 small{font-family:var(--f-body);font-weight:400;font-size:.82rem;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.hint{font-size:.86rem;color:var(--muted)}
+.btn{border:0;background:var(--accent);color:var(--accent-ink);border-radius:12px;padding:11px 16px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px}
+.btn.ghost{background:transparent;color:var(--accent);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--accent) 55%,transparent)}
+.btn.soft{background:var(--accent-soft);color:var(--ink)}
+.btn.danger{background:var(--danger);color:#fff}
+.btn.sm{padding:7px 12px;min-height:36px;font-size:.88rem;border-radius:10px}
+.btn:disabled{opacity:.45;cursor:default}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.fld{display:flex;flex-direction:column;gap:6px;min-width:0}
+.fld>label,.lab{font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}
+.inp{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--bg);min-height:44px;min-width:0}
+.inp:focus{border-color:var(--accent);outline:none}
+textarea.inp{min-height:90px;resize:vertical}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1.5px solid var(--line);background:var(--surface);border-radius:99px;padding:6px 12px;font-size:.88rem;font-weight:700;color:var(--muted);min-height:36px}
+.chip[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);color:var(--ink)}
+.chip .n{font-family:var(--f-mono);font-size:.78rem;margin-left:4px}
+
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:.76rem;font-weight:700;padding:3px 9px;border-radius:99px;white-space:nowrap}
+.st-cible{background:var(--surface-2);color:var(--muted)}
+.st-attente{background:var(--accent-soft);color:var(--accent)}
+.st-entretien{background:var(--warn-soft);color:var(--warn)}
+.st-refus{background:var(--danger-soft);color:var(--danger)}
+.st-accepte{background:var(--ok-soft);color:var(--ok)}
+.due{background:var(--danger);color:#fff}
+.soon{background:var(--warn-soft);color:var(--warn)}
+.fit{background:var(--ok-soft);color:var(--ok)}
+.nofit{background:var(--surface-2);color:var(--muted)}
+
+/* Accueil */
+.hero{background:var(--ink);color:var(--surface);border-radius:20px;padding:22px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:center;position:relative;overflow:hidden}
+.hero h1{font-family:var(--f-display);font-weight:800;font-size:clamp(1.3rem,4vw,1.8rem);line-height:1.15}
+.hero p{margin:6px 0 0;opacity:.85}
+.hero .count{font-family:var(--f-display);font-weight:800;font-size:2.6rem;line-height:1;text-align:right}
+.hero .count small{display:block;font-family:var(--f-body);font-weight:400;font-size:.8rem;opacity:.8}
+.ring{--p:0;width:92px;height:92px;border-radius:50%;background:conic-gradient(var(--accent) calc(var(--p)*1%),var(--surface-2) 0);display:grid;place-items:center;flex:0 0 auto}
+.ring b{width:72px;height:72px;border-radius:50%;background:var(--surface);display:grid;place-items:center;font-family:var(--f-display);font-size:1.05rem;text-align:center;line-height:1.1}
+.ring b small{display:block;font-family:var(--f-body);font-size:.66rem;font-weight:400;color:var(--muted)}
+.todo{display:flex;flex-direction:column;gap:8px}
+.todo .it{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px;border-radius:12px;background:var(--bg);border:1px solid var(--line);text-align:left}
+.todo .it b{display:block}
+.todo .it .ic{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;background:var(--surface);font-size:1.1rem}
+.todo .it.late{border-color:color-mix(in srgb,var(--danger) 45%,var(--line));background:var(--danger-soft)}
+.stamps{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:12px}
+.stampb{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;font-size:.74rem;color:var(--muted)}
+.stampb .s{width:70px;height:70px;border-radius:50%;border:2.5px dashed var(--line);display:grid;place-items:center;font-family:var(--f-display);font-weight:800;font-size:.66rem;line-height:1.15;color:var(--line);padding:6px;transform:rotate(-8deg);text-transform:uppercase}
+.stampb.on .s{border:3px solid var(--stamp);color:var(--stamp);background:var(--stamp-soft);box-shadow:inset 0 0 0 3px var(--surface),inset 0 0 0 4.5px var(--stamp)}
+.stampb.on{color:var(--ink)}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.stat{background:var(--bg);border-radius:12px;padding:10px 12px}
+.stat b{display:block;font-family:var(--f-display);font-size:1.4rem;line-height:1.2}
+.stat span{font-size:.78rem;color:var(--muted)}
+
+/* Entreprises */
+.split{display:grid;grid-template-columns:minmax(0,1fr);gap:16px}
+.clist{display:flex;flex-direction:column;gap:8px}
+.ccard{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;padding:12px 14px;border-radius:14px;background:var(--surface);border:1px solid var(--line);text-align:left;width:100%}
+.ccard:hover{border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
+.ccard .t{font-weight:700;font-size:1rem;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ccard .m{grid-column:1/-1;display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:.82rem;color:var(--muted)}
+.ex{font-size:.66rem;text-transform:uppercase;letter-spacing:.08em;font-weight:700;color:var(--warn)}
+.empty{padding:26px 12px;text-align:center;color:var(--muted)}
+.detail{display:flex;flex-direction:column;gap:16px}
+.actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.actions button{border:1.5px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 6px;font-size:.82rem;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:4px;min-height:64px}
+.actions button span{font-size:1.25rem}
+.actions button:hover{border-color:var(--accent)}
+.tl{display:flex;flex-direction:column;gap:0;border-left:2px solid var(--line);margin-left:8px;padding-left:16px}
+.tl .ev{position:relative;padding:6px 0 12px}
+.tl .ev::before{content:"";position:absolute;left:-23px;top:11px;width:12px;height:12px;border-radius:50%;background:var(--surface);border:2.5px solid var(--accent)}
+.tl .ev.refus::before{border-color:var(--danger)}.tl .ev.accepte::before{border-color:var(--ok);background:var(--ok)}
+.tl .ev .d{font-family:var(--f-mono);font-size:.78rem;color:var(--muted)}
+.tl .ev .x{border:0;background:transparent;color:var(--muted);padding:0 4px;font-size:.9rem;float:right}
+.refgrid{display:flex;flex-direction:column;gap:6px}
+.refgrid label{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border-radius:10px;background:var(--bg);font-size:.92rem}
+.refgrid input{width:20px;height:20px;accent-color:var(--accent);margin-top:2px;flex:0 0 auto}
+.proof{display:flex;gap:12px;align-items:center;padding:10px;border-radius:12px;background:var(--stamp-soft)}
+.proof img{width:110px;height:56px;object-fit:contain;background:#fff;border-radius:8px}
+
+/* Préparer */
+.tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{flex:0 0 auto;border:0;background:var(--surface);border-radius:99px;padding:8px 14px;font-weight:700;color:var(--muted);box-shadow:inset 0 0 0 1px var(--line);min-height:40px}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--surface);box-shadow:none}
+.script{background:var(--bg);border-radius:12px;padding:14px 16px;white-space:pre-wrap;line-height:1.65;border-left:4px solid var(--accent)}
+.script .var{background:var(--accent-soft);border-radius:4px;padding:0 3px;font-weight:700}
+.script .miss{background:var(--warn-soft);color:var(--warn);border-radius:4px;padding:0 3px;font-weight:700}
+.obj{border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.obj summary{padding:12px 14px;font-weight:700;cursor:pointer;list-style:none;display:flex;justify-content:space-between;gap:10px}
+.obj summary::after{content:"+";font-family:var(--f-mono);color:var(--muted)}
+.obj[open] summary::after{content:"−"}
+.obj .b{padding:0 14px 14px;display:flex;flex-direction:column;gap:8px}
+.check{display:flex;flex-direction:column;gap:6px}
+.check label{display:flex;gap:12px;align-items:center;padding:10px 12px;border-radius:12px;background:var(--bg);font-weight:700}
+.check input{width:22px;height:22px;accent-color:var(--ok);flex:0 0 auto}
+.check label small{display:block;font-weight:400;color:var(--muted);font-size:.84rem}
+.check label:has(input:checked){background:var(--ok-soft)}
+
+/* Simulateur */
+.scen{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.scen button{text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:8px}
+.scen button b{font-size:1.02rem}
+.scen .best{font-family:var(--f-mono);font-size:.8rem;color:var(--muted)}
+.chat{display:flex;flex-direction:column;gap:10px}
+.bub{max-width:86%;padding:10px 14px;border-radius:16px;line-height:1.45}
+.bub.them{background:var(--surface);border:1px solid var(--line);border-bottom-left-radius:4px;align-self:flex-start}
+.bub.me{background:var(--accent);color:var(--accent-ink);border-bottom-right-radius:4px;align-self:flex-end}
+.bub .who{display:block;font-size:.72rem;font-weight:700;opacity:.75;text-transform:uppercase;letter-spacing:.06em}
+.fb{align-self:stretch;font-size:.9rem;padding:8px 12px;border-radius:10px}
+.fb.s2{background:var(--ok-soft)}.fb.s1{background:var(--warn-soft)}.fb.s0{background:var(--danger-soft)}
+.choices{display:flex;flex-direction:column;gap:8px}
+.choices button{text-align:left;border:1.5px solid var(--line);background:var(--surface);border-radius:14px;padding:12px 14px;line-height:1.4}
+.choices button:hover{border-color:var(--accent)}
+
+/* Signature */
+.sigpad{width:100%;height:180px;border:2px dashed var(--line);border-radius:12px;background:#fff;touch-action:none;display:block}
+
+.bnav{display:none}
+#toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--surface);padding:11px 16px;border-radius:12px;font-size:.92rem;box-shadow:var(--shadow);z-index:300;max-width:min(92vw,520px);opacity:0;pointer-events:none;transition:opacity .2s}
+#toast.on{opacity:1}
+.modal{position:fixed;inset:0;background:rgba(8,12,22,.55);z-index:200;display:grid;place-items:end center;padding:0}
+.mbox{background:var(--surface);border-radius:20px 20px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom,0px));width:100%;max-width:620px;max-height:92%;overflow:auto;display:flex;flex-direction:column;gap:14px;box-shadow:var(--shadow)}
+.mbox h3{font-family:var(--f-display);font-weight:600;font-size:1.1rem}
+.mbox .acts{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+@media (min-width:700px){.modal{place-items:center;padding:16px}.mbox{border-radius:20px}}
+.banner{display:flex;gap:10px;align-items:center;padding:10px 14px;border-radius:12px;background:var(--warn-soft);font-size:.9rem;flex-wrap:wrap}
+.banner b{flex:1;min-width:min(100%,220px)}
+a.btn{text-decoration:none}
+.code{font-family:var(--f-mono);font-size:.72rem;word-break:break-all;background:var(--bg);border-radius:10px;padding:10px;max-height:120px;overflow:auto}
+.onb{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+.onb .big{font-family:var(--f-display);font-weight:800;font-size:clamp(1.6rem,6vw,2.3rem);line-height:1.1;letter-spacing:-.02em}
+.steps3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.steps3 div{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px;font-size:.88rem}
+.steps3 b{display:block;font-family:var(--f-display);font-size:1.3rem;color:var(--stamp)}
+
+@media (min-width:1100px){ .split.has{grid-template-columns:minmax(0,1fr) minmax(0,1.15fr)} }
+@media (max-width:820px){
+  #app{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto}
+  .rail{display:none}
+  .main{padding:18px 16px 40px}
+  .bnav{display:grid;grid-template-columns:repeat(5,1fr);background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+  .bnav button{border:0;background:transparent;padding:8px 2px 7px;font-size:.7rem;font-weight:700;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px;position:relative}
+  .bnav button svg{width:24px;height:24px}
+  .bnav button[aria-current="page"]{color:var(--accent)}
+  .bnav .dot{position:absolute;top:3px;left:calc(50% + 4px);min-width:17px;height:17px;border-radius:9px;background:var(--danger);color:#fff;font-size:.64rem;display:grid;place-items:center;padding:0 4px}
+  .grid2,.grid3{grid-template-columns:minmax(0,1fr)}
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .actions{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .hero{grid-template-columns:minmax(0,1fr)}
+  .hero .count{text-align:left}
+  .steps3{grid-template-columns:minmax(0,1fr)}
+  #toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+}
+@media (max-width:420px){ .actions{grid-template-columns:repeat(2,minmax(0,1fr))} }
+.dir-list{display:flex;flex-direction:column;gap:8px;max-height:56vh;overflow-y:auto;padding-right:4px}
+.dir-inline{display:flex;flex-direction:column;gap:8px}
+.dir-card{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;padding:12px 14px;border-radius:12px;background:var(--bg);border:1px solid var(--line);align-items:center}
+.dir-card:hover{border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
+.dir-card .t{font-weight:700;font-size:.98rem}
+.dir-card .sub{font-size:.82rem;color:var(--muted);line-height:1.4}
+.ac-list{display:flex;flex-direction:column;gap:4px;margin-top:4px}
+.ac-item{text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 10px;font-size:.82rem;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.ac-item:hover{border-color:var(--accent);background:var(--accent-soft)}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+
+<div id="app">
+  <aside class="rail">
+    <div class="logo"><i>PFMP</i>Cap PFMP</div>
+    <nav class="nav" id="rail"></nav>
+    <div class="foot" id="railfoot"></div>
+  </aside>
+  <main class="main" id="main"></main>
+  <nav class="bnav" id="bnav"></nav>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+<div class="modal" id="modal" hidden><div class="mbox" id="mbox" role="dialog" aria-modal="true"></div></div>
+<input type="file" id="fileIn" accept=".json,application/json,.txt,text/plain" hidden>
+
+<script>
+(function(){
+"use strict";
+/* ================= utilitaires ================= */
+const $=s=>document.querySelector(s);
+const uid=()=>Math.random().toString(36).slice(2,9)+Date.now().toString(36).slice(-4);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const pad=n=>String(n).padStart(2,"0");
+const iso=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+const parse=s=>{if(!s)return null;const [y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d)};
+const today=()=>iso(new Date());
+const addD=(s,n)=>{const d=parse(s)||new Date();d.setDate(d.getDate()+n);return iso(d)};
+const diffD=(a,b)=>Math.round((parse(a)-parse(b))/864e5);
+const MOIS=["janv.","févr.","mars","avr.","mai","juin","juil.","août","sept.","oct.","nov.","déc."];
+const JOURS=["dim.","lun.","mar.","mer.","jeu.","ven.","sam."];
+const fd=s=>{const d=parse(s);return d?JOURS[d.getDay()]+" "+d.getDate()+" "+MOIS[d.getMonth()]:""};
+const fdl=s=>{const d=parse(s);return d?d.getDate()+" "+["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"][d.getMonth()]:""};
+const clone=o=>JSON.parse(JSON.stringify(o));
+const norm=s=>String(s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9]+/g," ").trim();
+const inFrame=(()=>{try{return window.self!==window.top}catch(e){return true}})();
+
+/* ================= référentiels ================= */
+const DIPLOMES={
+  MCVA:{label:"Bac pro MCV option A",long:"Bac pro Métiers du commerce et de la vente, option A (animer et gérer l'espace commercial)",acts:[
+    ["conseil","Accueillir, conseiller et vendre aux clients"],["caisse","Encaisser et clôturer une vente"],["suivi","Suivre les commandes, les retours et les réclamations"],["fidel","Participer à la fidélisation (carte, relation client)"],["anim","Animer l'espace : vitrine, mise en avant, promotions"],["stock","Gérer le réassort, l'implantation et les stocks"]]},
+  MCVB:{label:"Bac pro MCV option B",long:"Bac pro Métiers du commerce et de la vente, option B (prospection clientèle et valorisation de l'offre commerciale)",acts:[
+    ["conseil","Accueillir, conseiller et vendre aux clients"],["suivi","Suivre les commandes, les retours et les réclamations"],["fidel","Participer à la fidélisation (relation client)"],["prosp","Prospecter : appels, terrain, fichier clients"],["salon","Valoriser l'offre : salon, showroom, événement"],["web","Valoriser l'offre sur le site ou les réseaux sociaux"]]},
+  ACC:{label:"Bac pro Métiers de l'accueil",long:"Bac pro Métiers de l'accueil",acts:[
+    ["physique","Accueillir le public en face à face"],["tel","Accueillir au téléphone, par mail ou chat"],["info","Gérer l'information : agendas, courrier, plannings"],["orient","Renseigner et orienter les visiteurs"],["vente","Vendre des services, fidéliser"],["reclam","Traiter les réclamations et les situations difficiles"]]}
+};
+const MIN_FIT=3;
+const SECTEURS=["Prêt-à-porter","Sport","Alimentaire / supermarché","Beauté / parfumerie","Maison / déco / bricolage","High-tech / téléphonie","Chaussures / accessoires","Banque / assurance","Immobilier","Automobile","Hôtellerie / tourisme","Accueil d'entreprise / administration","Santé / pharmacie / optique","Autre"];
+const EV={
+  depot:{l:"Dossier déposé",ic:"📄",pts:3,next:"depot",nextL:"Relance téléphonique"},
+  mail:{l:"Candidature par mail",ic:"✉️",pts:1,next:"mail",nextL:"Relance téléphonique"},
+  appel:{l:"Appel passé",ic:"📞",pts:2,next:"appel",nextL:"Rappeler"},
+  relance:{l:"Relance",ic:"🔁",pts:2,next:"relance",nextL:"Nouvelle relance"},
+  entretien:{l:"Entretien",ic:"🤝",pts:4,next:"entretien",nextL:"Relancer après l'entretien"},
+  refus:{l:"Refus",ic:"✋",pts:1},
+  accepte:{l:"Accord pour la PFMP",ic:"🎉",pts:10}
+};
+const REFUS=["Ne prend pas de stagiaires","Déjà complet","Pas de tuteur disponible","Pas de réponse après plusieurs relances","Activité ne correspond pas au diplôme","Autre"];
+const STATUS={cible:"À contacter",attente:"En attente",entretien:"Entretien",refus:"Refus",accepte:"Accepté"};
+
+/* ================= état ================= */
+const KEY="capPFMP.v1";
+const bConv=()=>({checks:{},tuteur:"",tel:"",horaires:"",missions:""}),bRet=()=>({note:0,missions:[],conseil:"",reco:""});
+function blank(){return {v:1,id:uid(),createdAt:Date.now(),updatedAt:Date.now(),profile:null,config:{relance:{depot:5,mail:3,appel:2,relance:5,entretien:2},objectif:20,hebdo:5,partners:[],classe:"",prof:"",lycee:"",periodes:1,pfmpStart:"",pfmpEnd:"",pfmp2Start:"",pfmp2End:""},companies:[],exp:[],checklist:{},conventions:{1:bConv(),2:bConv()},retours:{1:bRet(),2:bRet()},sim:{},dys:false,example:false}}
+let S;try{S=JSON.parse(localStorage.getItem(KEY)||"null")}catch(e){S=null}
+if(!S||!S.id)S=blank();
+fix(S);
+function fix(s){const b=blank();for(const k in b)if(s[k]===undefined)s[k]=b[k];s.config=Object.assign(b.config,s.config||{});s.config.relance=Object.assign(blank().config.relance,s.config.relance||{});s.companies.forEach(c=>{c.events=c.events||[];c.refs=c.refs||[]});if(s.convention){s.conventions=s.conventions||{};s.conventions[1]=Object.assign(bConv(),s.convention);delete s.convention}if(s.retour){s.retours=s.retours||{};s.retours[1]=Object.assign(bRet(),s.retour);delete s.retour}s.conventions=s.conventions||{};s.retours=s.retours||{};[1,2].forEach(n=>{s.conventions[n]=Object.assign(bConv(),s.conventions[n]||{});s.retours[n]=Object.assign(bRet(),s.retours[n]||{})})}
+function save(){S.updatedAt=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){toast("Impossible d'enregistrer sur ce téléphone : exporte ton suivi pour ne rien perdre.")}}
+document.body.classList.toggle("dys",!!S.dys);
+
+/* ================= calculs ================= */
+const D=()=>DIPLOMES[(S.profile&&S.profile.diplome)||"MCVB"];
+const P=()=>S.profile||{};
+const nP=()=>+(P().periodes||S.config.periodes||1)===2?2:1;
+const per=n=>n===2?{n:2,start:P().pfmp2Start||S.config.pfmp2Start,end:P().pfmp2End||S.config.pfmp2End}:{n:1,start:P().pfmpStart||S.config.pfmpStart,end:P().pfmpEnd||S.config.pfmpEnd};
+const cPer=c=>nP()===2&&+c.periode===2?2:1;
+function acceptedFor(n){return S.companies.find(c=>cStatus(c)==="accepte"&&cPer(c)===n)}
+function curPeriod(){for(let n=1;n<=nP();n++)if(!acceptedFor(n))return n;return 1}
+const pfmp=n=>per(n||curPeriod());
+const pLab=n=>nP()===2?"période "+n:"PFMP";
+function weeks(n){const {start,end}=pfmp(n);if(!start||!end)return 0;return Math.max(1,Math.round((diffD(end,start)+3)/7))}
+function cStatus(c){const ev=c.events;if(!ev.length)return "cible";if(ev.some(e=>e.type==="accepte"))return "accepte";const last=ev[ev.length-1];if(last.type==="refus")return "refus";if(ev.some(e=>e.type==="entretien"))return "entretien";return "attente"}
+function sortEv(c){c.events.sort((a,b)=>a.date.localeCompare(b.date)||(a.t||0)-(b.t||0))}
+function fit(c){return c.refs.filter(r=>D().acts.some(a=>a[0]===r)).length}
+function points(){let p=0;S.companies.forEach(c=>c.events.forEach(e=>{p+=(EV[e.type]||{pts:0}).pts}));S.companies.forEach(c=>{if(c.proof)p+=2});return p}
+function allEvents(){const a=[];S.companies.forEach(c=>c.events.forEach(e=>a.push(Object.assign({c},e))));return a}
+function weekStart(){const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-((d.getDay()+6)%7));return iso(d)}
+function weekActions(){const ws=weekStart();return allEvents().filter(e=>e.date>=ws&&e.date<=today()).length}
+function tasks(){const t=today(),out=[];S.companies.forEach(c=>{const st=cStatus(c);if((st==="attente"||st==="entretien")&&c.next&&c.next.date){out.push({c,date:c.next.date,label:c.next.label,late:c.next.date<t,now:c.next.date===t})}});return out.sort((a,b)=>a.date.localeCompare(b.date))}
+function accepted(){return S.companies.find(c=>cStatus(c)==="accepte")}
+const BADGES=[
+  ["first","Premier pas","Ta première démarche",()=>allEvents().length>=1],
+  ["cible10","10 cibles","10 entreprises dans ta liste",()=>S.companies.length>=10],
+  ["cible","Objectif liste",()=>`${S.config.objectif} entreprises ciblées`,()=>S.companies.length>=S.config.objectif],
+  ["five","5 démarches","5 démarches réalisées",()=>allEvents().filter(e=>e.type!=="accepte").length>=5],
+  ["relance","Relanceur","3 relances faites",()=>allEvents().filter(e=>e.type==="relance").length>=3],
+  ["semaine","Semaine pleine","Objectif de la semaine atteint",()=>weekActions()>=S.config.hebdo],
+  ["tampon","Attestation","Une attestation signée",()=>S.companies.some(c=>c.proof)],
+  ["tenace","Persévérant","5 refus et tu continues",()=>S.companies.filter(c=>cStatus(c)==="refus").length>=5&&S.companies.some(c=>["cible","attente","entretien"].includes(cStatus(c)))],
+  ["entretien","Entretien","Un entretien passé",()=>allEvents().some(e=>e.type==="entretien")],
+  ["sim","Entraîné","Un scénario réussi à 75 %",()=>Object.values(S.sim).some(v=>v>=75)],
+  ["oui","C'est oui !","Une entreprise t'accueille",()=>!!accepted()]
+];
+
+/* ================= interface générale ================= */
+const ICONS={
+  home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>',
+  shops:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9l1.5-5h13L20 9M4 9h16v11H4zM4 9a2.7 2.7 0 0 0 5.3 0 2.7 2.7 0 0 0 5.4 0 2.7 2.7 0 0 0 5.3 0M10 20v-5h4v5"/></svg>',
+  prep:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/><path d="M8.5 11h7M8.5 14h4"/></svg>',
+  sim:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12h4M8 10v4M15 11h.01M18 13h.01"/><path d="M17.3 5H6.7a4 4 0 0 0-4 3.6L2 15a3 3 0 0 0 5.4 2l1.2-1.6h6.8l1.2 1.6A3 3 0 0 0 22 15l-.7-6.4A4 4 0 0 0 17.3 5z"/></svg>',
+  me:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>'
+};
+const VIEWS=[["home","Accueil"],["shops","Entreprises"],["prep","Préparer"],["sim","S'entraîner"],["me","Moi"]];
+const ui={view:"home",sel:null,filter:"all",q:"",prepTab:"accroche",prepCo:"",sim:null};
+try{const u=JSON.parse(localStorage.getItem(KEY+".ui")||"{}");if(u.view)ui.view=u.view;if(u.prepTab)ui.prepTab=u.prepTab}catch(e){}
+function saveUi(){try{localStorage.setItem(KEY+".ui",JSON.stringify({view:ui.view,prepTab:ui.prepTab}))}catch(e){}}
+let tt;function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("on");clearTimeout(tt);tt=setTimeout(()=>t.classList.remove("on"),3400)}
+function modal(html,bind){const m=$("#modal");$("#mbox").innerHTML=html;m.hidden=false;const close=()=>{m.hidden=true;$("#mbox").innerHTML="";document.removeEventListener("keydown",k)};const k=e=>{if(e.key==="Escape")close()};document.addEventListener("keydown",k);m.onclick=e=>{if(e.target===m)close()};bind&&bind(close);const f=$("#mbox").querySelector("input,select,textarea,button");f&&f.focus();return close}
+function confirmBox(title,txt,ok,fn,danger){modal(`<h3>${esc(title)}</h3><p style="margin:0">${esc(txt)}</p><div class="acts"><button class="btn ghost" data-x>Annuler</button><button class="btn ${danger?"danger":""}" data-ok>${esc(ok)}</button></div>`,close=>{$("#mbox [data-x]").onclick=close;$("#mbox [data-ok]").onclick=()=>{close();fn()}})}
+function copy(text,msg){const fb=()=>modal(`<h3>Copie ce texte</h3><textarea class="inp" id="cpy" style="min-height:220px;font-size:.8rem">${esc(text)}</textarea><p class="hint" style="margin:0">Appuie longuement dans la zone, puis « Tout sélectionner » et « Copier ».</p><div class="acts"><button class="btn" data-x>Fermer</button></div>`,close=>{const t=$("#cpy");t.focus();t.select();$("#mbox [data-x]").onclick=close});
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(text).then(()=>toast(msg||"Copié."),fb);else fb()}
+let voices=[];function loadV(){try{voices=speechSynthesis.getVoices().filter(v=>/^fr/i.test(v.lang))}catch(e){}}
+if("speechSynthesis" in window){loadV();try{speechSynthesis.addEventListener("voiceschanged",loadV)}catch(e){}}
+function speak(text){if(!("speechSynthesis" in window)){toast("La lecture à voix haute n'est pas disponible sur cet appareil.");return}try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text.replace(/[«»]/g,""));u.lang="fr-FR";if(voices[0])u.voice=voices[0];u.rate=.95;speechSynthesis.speak(u)}catch(e){}}
+
+function renderNav(){
+  const n=tasks().filter(t=>t.late||t.now).length;
+  const item=([k,l])=>`<button data-go="${k}" ${ui.view===k?'aria-current="page"':""}>${ICONS[k]}${l}${k==="home"&&n?`<span class="dot">${n}</span>`:""}</button>`;
+  $("#rail").innerHTML=VIEWS.map(item).join("");$("#bnav").innerHTML=VIEWS.map(item).join("");
+  $("#railfoot").innerHTML=S.profile?`${esc(P().prenom)} · ${esc(P().classe||"")}<br>${esc(D().label)}`:"";
+}
+function ensureProfile(){
+  if(!S.profile){
+    const p=$("#p-prenom")?readProfile():{};
+    S.profile=Object.assign({prenom:"Élève",nom:"",diplome:"MCVB",classe:"",lycee:"",ville:"",trajet:45,periodes:1,pfmpStart:"",pfmpEnd:"",pfmp2Start:"",pfmp2End:""},p,{prenom:(p&&p.prenom)||"Élève"});
+    save();
+  }
+}
+function go(v){if(v!=="home")ensureProfile();ui.view=v;if(v!=="shops")ui.sel=ui.sel;saveUi();render();$("#main").scrollTop=0}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(b){if(b.dataset.go==="shops"&&!S.companies.length)ui.shopMode="annuaire";go(b.dataset.go)}});
+
+function render(){
+  renderNav();
+  if(!S.profile){renderOnboarding();return}
+  ({home:renderHome,shops:renderShops,prep:renderPrep,sim:renderSim,me:renderMe})[ui.view]();
+}
+
+/* ================= premier lancement ================= */
+function profileForm(p){p=p||{};const c=S.config;const np=+(p.periodes||c.periodes||1)===2?2:1;
+  return `<div class="grid2">
+    <div class="fld"><label for="p-prenom">Prénom</label><input class="inp" id="p-prenom" autocomplete="given-name" value="${esc(p.prenom)}" required></div>
+    <div class="fld"><label for="p-nom">Nom</label><input class="inp" id="p-nom" autocomplete="family-name" value="${esc(p.nom)}"></div>
+  </div>
+  <div class="fld"><label for="p-dip">Mon diplôme</label><select class="inp" id="p-dip">${Object.entries(DIPLOMES).map(([k,d])=>`<option value="${k}" ${(p.diplome||"MCVB")===k?"selected":""}>${esc(d.label)}</option>`).join("")}</select></div>
+  <div class="grid2">
+    <div class="fld"><label for="p-classe">Ma classe</label><input class="inp" id="p-classe" value="${esc(p.classe||c.classe)}" placeholder="Ex. 1MCVB2"></div>
+    <div class="fld"><label for="p-lycee">Mon lycée</label><input class="inp" id="p-lycee" value="${esc(p.lycee||c.lycee)}" placeholder="Nom du lycée"></div>
+  </div>
+  <div class="grid2">
+    <div class="fld"><label for="p-ville">Ma ville ou mon quartier</label><input class="inp" id="p-ville" value="${esc(p.ville)}" placeholder="Pour cibler près de chez toi"></div>
+    <div class="fld"><label for="p-trajet">Trajet maximum accepté</label><select class="inp" id="p-trajet">${[20,30,45,60].map(m=>`<option value="${m}" ${(+p.trajet||45)===m?"selected":""}>${m} minutes</option>`).join("")}</select></div>
+  </div>
+  <div class="fld"><label for="p-np">Combien de périodes de PFMP dois-tu trouver ?</label><select class="inp" id="p-np"><option value="1" ${np===1?"selected":""}>1 période</option><option value="2" ${np===2?"selected":""}>2 périodes (Terminale)</option></select></div>
+  <span class="lab" id="p-l1">${np===2?"Période 1":"Dates de la PFMP"}</span>
+  <div class="grid2">
+    <div class="fld"><label for="p-start">Début</label><input class="inp" type="date" id="p-start" value="${esc(p.pfmpStart||c.pfmpStart)}"></div>
+    <div class="fld"><label for="p-end">Fin</label><input class="inp" type="date" id="p-end" value="${esc(p.pfmpEnd||c.pfmpEnd)}"></div>
+  </div>
+  <div id="p-per2" style="display:flex;flex-direction:column;gap:12px" ${np===2?"":"hidden"}><span class="lab">Période 2</span><div class="grid2">
+    <div class="fld"><label for="p-start2">Début</label><input class="inp" type="date" id="p-start2" value="${esc(p.pfmp2Start||c.pfmp2Start)}"></div>
+    <div class="fld"><label for="p-end2">Fin</label><input class="inp" type="date" id="p-end2" value="${esc(p.pfmp2End||c.pfmp2End)}"></div>
+  </div></div>`}
+document.addEventListener("change",e=>{if(e.target&&e.target.id==="p-np"){const two=e.target.value==="2";const b=$("#p-per2");if(b)b.hidden=!two;const l=$("#p-l1");if(l)l.textContent=two?"Période 1":"Dates de la PFMP"}});
+function readProfile(){const v=id=>($("#"+id)||{}).value||"";return {prenom:v("p-prenom").trim(),nom:v("p-nom").trim(),diplome:v("p-dip"),classe:v("p-classe").trim(),lycee:v("p-lycee").trim(),ville:v("p-ville").trim(),trajet:+v("p-trajet")||45,pfmpStart:v("p-start"),pfmpEnd:v("p-end"),periodes:+v("p-np")===2?2:1,pfmp2Start:v("p-start2"),pfmp2End:v("p-end2")}}
+function renderOnboarding(){
+  $("#main").innerHTML=`<div class="onb">
+    <div><span class="eyebrow">Ton carnet de route</span><div class="big">Trouve ta PFMP,<br>une démarche à la fois.</div></div>
+    <div class="steps3"><div><b>1</b>Tu listes les entreprises qui te correspondent.</div><div><b>2</b>Tu notes chaque démarche : l'appli te dit quand relancer.</div><div><b>3</b>Tu prépares tes visites et tu t'entraînes avant d'y aller.</div></div>
+    <div class="panel"><h2>Faisons connaissance</h2>${profileForm(null)}
+      <p class="hint" style="margin:0">Tes données restent sur ce téléphone. Tu les envoies toi-même à ton professeur quand tu veux.</p>
+      <div class="row"><button class="btn" id="startBtn">C'est parti</button><button class="btn ghost" id="classBtn">J'ai un code de mon prof</button></div>
+    </div>
+    <div class="row"><button type="button" class="btn soft" id="onbDirBtn">🏫 Voir les ${ANNUAIRE_VENTE.length} entreprises Vente du lycée</button><button type="button" class="btn soft" id="demoBtn">Voir un exemple avant de commencer</button></div>
+    <button class="btn ghost sm" id="restoreBtn" style="align-self:flex-start">Récupérer mon suivi (nouveau téléphone)</button>
+  </div>`;
+  $("#startBtn").onclick=()=>{const p=readProfile();if(!p.prenom){toast("Écris au moins ton prénom.");$("#p-prenom").focus();return}S.profile=p;save();toast("Bienvenue "+p.prenom+" ! Ajoute ta première entreprise.");go("home")};
+  $("#classBtn").onclick=()=>classCodeModal();
+  $("#onbDirBtn").onclick=()=>{ensureProfile();ui.shopMode="annuaire";go("shops")};
+  $("#demoBtn").onclick=()=>{loadDemo();go("home");toast("Ceci est un exemple. Tu pourras l'effacer depuis l'accueil.")};
+  $("#restoreBtn").onclick=()=>restoreModal();
+}
+function loadDemo(){
+  const t=today();const ev=(type,d,extra)=>Object.assign({id:uid(),type,date:addD(t,d),t:Date.now()},extra||{});
+  S=blank();S.example=true;S.profile={prenom:"Inès",nom:"Exemple",diplome:"MCVB",classe:"1MCVB2",lycee:"Lycée Jean-Moulin",ville:"Aulnay-sous-Bois",trajet:45,pfmpStart:addD(t,40),pfmpEnd:addD(t,68)};
+  const mk=(nom,type,ville,events,refs,next,extra)=>Object.assign({id:uid(),nom,type,ville,adresse:"",tel:"",email:"",contact:"",trajet:"",source:"",refs:refs||[],avis:"",notes:"",events:events||[],next:next||null,created:Date.now()},extra||{});
+  S.companies=[
+    mk("Sport Horizon","Sport","Aulnay-sous-Bois",[ev("depot",-6)],["conseil","suivi","salon"],{date:addD(t,-1),label:"Relance téléphonique"},{contact:"Mme Bertin, directrice"}),
+    mk("Optique du Parc","Santé / pharmacie / optique","Sevran",[ev("mail",-3)],["conseil","fidel"],{date:t,label:"Relance téléphonique"}),
+    mk("Maison Déco Plus","Maison / déco / bricolage","Le Blanc-Mesnil",[ev("depot",-12),ev("relance",-7),ev("refus",-5,{reason:"Ne prend pas de stagiaires"})],["conseil"],null,{proof:{name:"",role:"Responsable de magasin",date:addD(t,-5),answer:"Refus",sig:""}}),
+    mk("Agence Nord Habitat","Immobilier","Aulnay-sous-Bois",[ev("appel",-2),ev("entretien",-1)],["prosp","conseil","fidel","web"],{date:addD(t,1),label:"Relancer après l'entretien"}),
+    mk("Boutique Lina Mode","Prêt-à-porter","Aulnay-sous-Bois",[],[],null)
+  ];
+  save();
+}
+
+/* ================= accueil ================= */
+function renderHome(){
+  const p=P(),tk=tasks(),wa=weekActions(),h=S.config.hebdo,np=nP(),cur=curPeriod();
+  const found=[1,2].slice(0,np).map(n=>acceptedFor(n)),allFound=found.every(Boolean),acc=allFound;
+  const tp=allFound?([1,2].slice(0,np).find(n=>per(n).start&&per(n).start>=today())||np):cur,start=per(tp).start;
+  const days=start?diffD(start,today()):null;
+  const counts={};S.companies.forEach(c=>{const s=cStatus(c);counts[s]=(counts[s]||0)+1});
+  const late=tk.filter(t=>t.late||t.now),soon=tk.filter(t=>!t.late&&!t.now).slice(0,3);
+  const todos=[];
+  late.forEach(t=>todos.push(`<button class="it late" data-open="${t.c.id}"><span class="ic">🔁</span><span><b>${esc(t.label)} · ${esc(t.c.nom)}</b><span class="hint">${t.late?"En retard depuis "+fd(t.date):"Aujourd'hui"}</span></span><span class="pill due">${t.late?"En retard":"Aujourd'hui"}</span></button>`));
+  soon.forEach(t=>todos.push(`<button class="it" data-open="${t.c.id}"><span class="ic">🗓️</span><span><b>${esc(t.label)} · ${esc(t.c.nom)}</b><span class="hint">${fd(t.date)}</span></span><span class="pill soon">Bientôt</span></button>`));
+  todos.push(`<button class="it" id="homeOpenDir"><span class="ic">🏫</span><span><b>Annuaire Vente du lycée (${ANNUAIRE_VENTE.length} entreprises)</b><span class="hint">Immobilier, Auto, Assurance, Banque… Ajoute-les en 1 clic</span></span><span class="pill st-attente">Voir la liste</span></button>`);
+  if(!acc&&S.companies.length<S.config.objectif)todos.push(`<button class="it" data-go="shops"><span class="ic">➕</span><span><b>Ajoute des entreprises à ta liste</b><span class="hint">${S.companies.length} sur ${S.config.objectif} visées</span></span><span class="pill st-attente">${S.config.objectif-S.companies.length} à trouver</span></button>`);
+  const toContact=S.companies.filter(c=>cStatus(c)==="cible");
+  if(!acc&&toContact.length)todos.push(`<button class="it" data-open="${toContact[0].id}"><span class="ic">🚶</span><span><b>Contacte ${esc(toContact[0].nom)}</b><span class="hint">${toContact.length} entreprise(s) pas encore contactée(s)</span></span><span class="pill st-cible">À faire</span></button>`);
+  found.forEach((fc,i)=>{if(!fc)return;const n=i+1,cv=S.conventions[n].checks;const nDone=CONV.filter(x=>cv[x[0]]).length;todos.unshift(`<button class="it" data-go="me"><span class="ic">📝</span><span><b>Termine ta convention${np===2?" (période "+n+")":""}</b><span class="hint">${esc(fc.nom)} · ${nDone} étape(s) sur ${CONV.length}</span></span><span class="pill st-accepte">${nDone===CONV.length?"Fini":"En cours"}</span></button>`)});
+  $("#main").innerHTML=`<div class="wrap">
+    ${S.example?`<div class="banner"><b>Ceci est un exemple : rien n'est à toi.</b><button class="btn sm" id="clearDemo">Commencer pour de vrai</button></div>`:""}
+    <section class="hero">
+      <div><span class="eyebrow" style="color:inherit;opacity:.7">Salut ${esc(p.prenom)}</span>
+        <h1>${allFound?(np===2?"Tes 2 PFMP sont trouvées !":`PFMP trouvée chez ${esc(found[0].nom)} !`):found.some(Boolean)?`Période ${found.findIndex(Boolean)+1} trouvée ! Cherche maintenant la période ${cur}`:late.length?`${late.length} relance${late.length>1?"s":""} à faire aujourd'hui`:S.companies.length?"Continue sur ta lancée":"Commence par lister 5 entreprises"}</h1>
+        <p>${start?(days>0?`Ta ${pLab(tp)} commence dans ${days} jour${days>1?"s":""} (${fdl(start)}).`:days===0?`Ta ${pLab(tp)} commence aujourd'hui !`:`Ta ${pLab(tp)} a commencé.`) :`Ajoute les dates de ta ${pLab(tp)} dans « Moi ».`}</p>
+        ${np===2?`<p style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">${[1,2].map(n=>`<span class="pill" style="background:rgba(255,255,255,.14);color:inherit">Période ${n}${per(n).start?" · "+fd(per(n).start):""} : ${found[n-1]?esc(found[n-1].nom):"à trouver"}</span>`).join("")}</p>`:""}</div>
+      <div class="count">${points()}<small>points de démarches</small></div>
+    </section>
+    <div class="grid2">
+      <section class="panel"><h2>À faire <small>${todos.length?"":"rien d'urgent"}</small></h2><div class="todo">${todos.join("")||'<p class="hint" style="margin:0">Tout est à jour. Profites-en pour t\'entraîner ou préparer ta prochaine visite.</p>'}</div></section>
+      <section class="panel"><h2>Cette semaine</h2>
+        <div class="row" style="gap:16px;flex-wrap:nowrap"><div class="ring" style="--p:${Math.min(100,wa/h*100)}"><b>${wa}/${h}<small>démarches</small></b></div>
+        <p class="hint" style="margin:0">${wa>=h?"Objectif atteint, bravo. Chaque démarche compte, même un refus.":`Encore ${h-wa} démarche${h-wa>1?"s":""} pour atteindre ton objectif. Un dépôt, un appel ou une relance comptent.`}</p></div>
+        <div class="stats">
+          <div class="stat"><b class="num">${S.companies.length}</b><span>ciblées</span></div>
+          <div class="stat"><b class="num">${(counts.attente||0)+(counts.entretien||0)}</b><span>en cours</span></div>
+          <div class="stat"><b class="num">${counts.refus||0}</b><span>refus</span></div>
+          <div class="stat"><b class="num">${counts.accepte||0}</b><span>accord</span></div>
+        </div>
+      </section>
+    </div>
+    <section class="panel"><h2>Mes tampons <small>${BADGES.filter(b=>b[3]()).length} / ${BADGES.length}</small></h2>
+      <div class="stamps">${BADGES.map(([k,t,desc,ok])=>{const on=ok();return `<div class="stampb ${on?"on":""}"><div class="s">${esc(t)}</div><span>${esc(typeof desc==="function"?desc():desc)}</span></div>`}).join("")}</div>
+    </section>
+  </div>`;
+  const cd=$("#clearDemo");cd&&(cd.onclick=()=>{S=blank();save();render()});
+  const hod=$("#homeOpenDir");hod&&(hod.onclick=()=>{ui.shopMode="annuaire";go("shops")});
+  $("#main").querySelectorAll("[data-open]").forEach(b=>b.onclick=()=>{ui.sel=b.dataset.open;go("shops")});
+}
+
+const ANNUAIRE_VENTE=[["AGENCE LAFORÊT","Immobilier","Immobilier","68 AVE DU MARECHAL JOFFRE","95100","Argenteuil","01 39 47 04 48"],["CENTURY 21 (Aubervilliers)","Immobilier","Immobilier","4 RUE ACHILLE DOMART","93300","Aubervilliers","01 41 61 09 15"],["L'AGENCE CENTRALE IMMOBILIER","Immobilier","Immobilier","102 avenue Victor Hugo","93300","Aubervilliers","01 48 33 33 33"],["MEMO TRANSACTION IMMOBILIERE","Immobilier","Immobilier","4 RUE DU LANDY","93300","Aubervilliers","01 80 89 40 06"],["ORPI Aubervilliers","Immobilier","Immobilier","23 rue du Moutier","93300","Aubervilliers","01 48 33 55 02"],["ASSURANCIO","Banque / assurance","Assurance","115 BIS Avenue Jean Jaurès","93300","Aubervilliers",""],["AIOLIA NOUVELLE AVENUE","Immobilier","Immobilier","20 ROUTE DE BONDY","93600","Aulnay-sous-Bois","01 48 69 00 00"],["Casa nova Consulting","Immobilier","Immobilier","2 rue de Corse","93600","Aulnay-sous-Bois",""],["GESTIUM AULNAY","Immobilier","Immobilier","86 RUE DE MITRY","93600","Aulnay-sous-Bois","01 48 68 02 27"],["GUY HOQUET","Immobilier","Immobilier","24 RUE JACQUES DUCLOS","93600","Aulnay-sous-Bois","01 45 09 61 86"],["GUY HOQUET - Aulnay Sous Bois (93)","Immobilier","Immobilier","24 rue jacques duclos","93600","Aulnay-sous-Bois","01 45 09 61 86"],["GUY HOQUET IMMOBILIER","Immobilier","Immobilier","24 rue Jacque Duclos","93600","Aulnay-sous-Bois","01 45 09 61 86"],["IMMO CELIA","Immobilier","Immobilier","1 AVENUE GASTON CHAUVIN","93600","Aulnay-sous-Bois",""],["JG Concept - Pavillon IDF","Immobilier","Immobilier","11 avenue Anatole France","93600","Aulnay-sous-Bois",""],["NONNEVILLE IMMOBILIER","Immobilier","Immobilier","36/38 route de bondy","93600","Aulnay-sous-Bois","06 60 15 31 66"],["NOUVELLE AVENUE","Immobilier","Immobilier","20 route de Bondy","93600","Aulnay-sous-Bois",""],["ORPI - Aulnay Sous Bois (93)","Immobilier","Immobilier","24 rue Jacques Duclos","93600","Aulnay-sous-Bois","01 48 68 02 27"],["ORPI ABRI HOME AULNAY","Immobilier","Immobilier","86 RUE DE MITRY","93600","Aulnay-sous-Bois","01 48 68 02 27"],["ORPI GESTIUM","Immobilier","Immobilier","86 RUE DE MITRY","93600","Aulnay-sous-Bois","01 48 68 02 27"],["SAS VALIAN STEPHANE PLAZA AULNAY","Immobilier","Immobilier","14 RUE JEAN CHARCOT","93600","Aulnay-sous-Bois","01 45 09 57 14"],["SBT FINANCE","Immobilier","Immobilier","15 ROUTE DE BONDY","93600","Aulnay-sous-Bois","06 50 85 21 57"],["TILT IMMOBILIER","Immobilier","Immobilier","5 BIS ROUTE DE BONDY","93600","Aulnay-sous-Bois","01 48 79 09 32"],["ACSA Antenne Jupiter - Aulnay-Sous-Bois (93)","Banque / assurance","Assurance","rue de Saturne","93600","Aulnay-sous-Bois","01 58 03 92 82"],["AVIVA ASSURANCES","Banque / assurance","Assurance","21 Avenue Anatole France","93600","Aulnay-sous-Bois","06 12 22 63 76"],["MACIF - Aulnay Sous Bois (93)","Banque / assurance","Assurance","18 AVENUE ANATOLE FRANCE","93600","Aulnay-sous-Bois","03 21 69 20 44"],["LA POSTE - AULNAY SOUS BOIS","Banque / assurance","Banque","9 place de l'église","93600","Aulnay-sous-Bois",""],["LA POSTE - Aulnay Sous Bois (93)","Banque / assurance","Banque","9 PLACE DE L'EGLISE","93600","Aulnay-sous-Bois","06 19 83 67 90"],["groupe IDF conception","Autre","Commerce B2B / Équipements","12 rue gilberte Desnoyers","93600","Aulnay-sous-Bois",""],["Paris Nord Automobile","Automobile","Automobile & Véhicules","2 rue de bruxelles","93600","Aulnay-sous-Bois",""],["PSA RETAIL AULNAY","Automobile","Automobile & Véhicules","153 ROUTE DE MITRY","93600","Aulnay-sous-Bois","01 48 83 27 00"],["AULNAY CONSEIL IMMOBILIER","Immobilier","Immobilier","6 RUE IDISORE NERAT","93600","Aulnay-sous-Bois","06 69 30 07 78"],["Century 21","Immobilier","Immobilier","9 place du général leclerc","93600","Aulnay-sous-Bois","01 49 89 12 12"],["INVEST IMMO - Aulnay sous-bois (93)","Immobilier","Immobilier","6 avenue du 14 juillet","93600","Aulnay-sous-Bois","01 84 16 72 75"],["ORPI","Immobilier","Immobilier","2/4 Avenue Anatole France","93600","Aulnay-sous-Bois",""],["2 FNC","Automobile","Automobile & Véhicules","2 RUE DE BRUXELLES","93600","Aulnay-sous-Bois","01 48 66 31 69"],["CSL BOXE","Sport","Salle de sport","RUE ALAIN MIMOUN","93600","Aulnay-sous-Bois","06 61 10 60 97"],["Dynamic Servir Club","Sport","Salle de sport","rue du docteur fleming","93600","Aulnay-sous-Bois","06 51 92 83 64"],["GYMNASE DU MOULIN NEUF","Sport","Salle de sport","rue du Maréchal Juin","","Aulnay-sous-Bois","06 63 72 32 46"],["Stéphane Plaza BAGNOLET","Immobilier","Immobilier","57 avenue Gambetta","93170","Bagnolet","01 84 80 15 34"],["INVEST IMMO - Bobigny","Immobilier","Immobilier","2 AVENUE HENRI BARBUSSE","93000","Bobigny",""],["LA BANQUE POSTALE","Banque / assurance","Banque","11-19 rue Pablo Picasso","93000","Bobigny","01 41 83 27 59"],["LA BANQUE POSTALE LA NOUE CAILLET","Banque / assurance","Banque","2 ave Suzanne BUISSON","93140","Bondy","07 60 93 57 16"],["GCA TOYOTA","Automobile","Automobile & Véhicules","113 AVENUE GALLIENI","93140","Bondy","06 29 16 00 77"],["RJ Auto","Automobile","Automobile & Véhicules","10 place de la république","93141","Bondy",""],["STELLANTIS AND YOU (Peugeot)","Automobile","Automobile & Véhicules","97 Avenue Galienni","93140","Bondy","01 55 89 92 00"],["ANTOINE DUCRAY ASSURANCES","Banque / assurance","Assurance","183 BIS RUE GALLIENI","92100","Boulogne Billancourt","01 46 04 75 11"],["Cabinet Favreau Cachan","Immobilier","Immobilier","8 rue Gallieni","94230","Cachan","01 49 86 00 00"],["LA POSTE - CHELLES","Banque / assurance","Banque","5 AVENUE DE LA RESISTANCE","","Chelles",""],["TOP AUTO","Automobile","Automobile & Véhicules","34-36 ROUTE DE LA LIB2RATION","94430","Chennevières-sur-Marne","06 98 19 62 31"],["AC AUTOCLICK","Automobile","Automobile & Véhicules","28 ROUTE NATIONALE 3","77410","Claye-Souilly","09 83 40 16 93"],["CUISINE PLUS OPMJ","Maison / déco / bricolage","Cuisines & Menuiserie","RUE JEAN MONNET","","Claye-Souilly","01 86 70 92 14"],["SAS SKJP SPORTS","Sport","Salle de sport","ZAE de l'Ormeau","77380","Combs-la-Ville","09 73 12 00 18"],["ORPI DAMMARTIN","Immobilier","Immobilier","101 rue du général De Gaulle","77230","Dammartin-en-Goele","01 64 02 66 99"],["LA POSTE - DAMMARTIN","Banque / assurance","Banque","2 av du Maréchal Leclerc","77230","Dammartin-en-Goele","01 60 94 52 03"],["Immo 9","Immobilier","Immobilier","242 rue Anatole France","93700","Drancy","01 48 32 19 65"],["L'Adresse","Immobilier","Immobilier","62, rue Marcelin Berthelot","93700","Drancy","07 60 68 88 55"],["CMS ASSURANCES","Banque / assurance","Assurance","42 RUE HENRI BARBUSSE","93700","Drancy",""],["MMH ASSURANCES","Banque / assurance","Assurance","16 PLACE MAURICE NILES","93700","Drancy","09 80 72 46 09"],["LA POSTE - DRANCY","Banque / assurance","Banque","12 avenue Jean Jaurès","93700","Drancy",""],["CAMPOS AUTOMOBILES","Automobile","Automobile & Véhicules","246 AVENUE JEAN JAURES","93700","Drancy","01 48 30 49 70"],["DHAINE IMMOBILIER","Immobilier","Immobilier","48 AVENUE JEAN JAURES","93700","Drancy","01 48 32 31 66"],["Magic form","Sport","Salle de sport","187 route de Saint Leu","93800","Épinay-sur-Seine","01 49 51 27 04"],["ARTHUR IMMO_Fontenay s/Bois","Immobilier","Immobilier","15 Rue du Commandant Jean Duhail","94120","Fontenay-sous-Bois","01 75 64 05 30"],["ORPI FRANCONVILLE","Immobilier","Immobilier","120 BIS rue de la station","95130","Franconville","01 34 44 11 44"],["HDR BAT 11","Immobilier","Immobilier","11 Espace godard route nationale","95500","Gonesse",""],["CASTORAMA","Autre","Commerce B2B / Équipements","ZAC PARIS NORD 2","95500","Gonesse","01 48 63 88 00"],["ART IMMOBILIER","Immobilier","Immobilier","47 AVE JEAN JAURES","93120","La Courneuve","01 48 35 12 82"],["CENTURY 21 LA COURNEUVE","Immobilier","Immobilier","75 AVENUE JEAN JAURES","93120","La Courneuve","01 41 61 09 15"],["ORPI La Courneuve","Immobilier","Immobilier","68 av Paul Vaillant Couturier","93120","La Courneuve","01 48 36 15 14"],["Pack Man","Autre","Commerce B2B / Équipements","1 avenue Louis Blériot","93120","La Courneuve","09 82 58 00 70"],["AZUR IMMOBILIER","Immobilier","Immobilier","97 AVENUE JEAN jaurès","93120","La Courneuve","01 48 35 13 43"],["KHERA IMMO","Immobilier","Immobilier","4 RUE JEAN PIERRE TIMBAUD","93120","La Courneuve","01 49 34 16 53"],["C2A Assurances","Banque / assurance","Assurance","48 bis rue du bailly","93210","La Plaine Saint Denis","01 49 98 09 08"],["SAS PARINOX","Immobilier","Immobilier","8 AVENUE ALBERT EINSTEIN","93150","Le Blanc-Mesnil",""],["LA POSTE - BLANC MESNIL","Banque / assurance","Banque","2 RUE DE LA REPUBLIQUE","93150","Le Blanc-Mesnil","06 59 40 33 81"],["CITROËN - PRINCE","Automobile","Automobile & Véhicules","205 AVENUE P. V. COUTURIER","93150","Le Blanc-Mesnil","01 48 66 38 30"],["ERA SINGH IMMO","Immobilier","Immobilier","104 AVENUE DE LA DIVISION LECLERC","93350","Le Bourget","01 82 30 22 60"],["IMMO&CO","Immobilier","Immobilier","12 avenue de la Division Leclerc","93350","Le Bourget","01 48 11 45 35"],["ORPI Le Bourget","Immobilier","Immobilier","64 avenue de la division Leclerc","93350","Le Bourget","01 49 92 10 04"],["ORPI Le Bourget","Immobilier","Immobilier","64 av de la Division Leclerc","93350","Le Bourget","01 49 92 10 04"],["MS ASSURANCE","Banque / assurance","Assurance","25 URE ANDRE JOINEAU","93310","Le Pre St Gervais","07 63 19 95 90"],["ALLIANZ","Banque / assurance","Assurance","88 av de la résistance","93340","Le Raincy","01 43 81 70 70"],["Assurance Allianz","Banque / assurance","Assurance","88 Avenue de la Résistance","93340","Le Raincy",""],["CENTURY 21 PAVILLONS SOUS BOIS","Immobilier","Immobilier","154-162 AVENUE ARISTIDE BRIAND","93320","Les Pavillons-sous-Bois","01 48 48 21 13"],["IMMO 5","Immobilier","Immobilier","25 AV VICTOR HUGO","93320","Les Pavillons-sous-Bois","01 48 02 00 21"],["Robin immobilier","Immobilier","Immobilier","65 boulevard Pasteur","93320","Les Pavillons-sous-Bois","01 48 48 10 92"],["DIAF ASSURANCE","Banque / assurance","Assurance","15 AVENUE DE CHANZY","93320","Les Pavillons-sous-Bois","01 41 64 03 45"],["Groupe SCAI courtage en assurance","Banque / assurance","Assurance","1 avenue victor hugo","93320","Les Pavillons-sous-Bois","01 48 48 35 97"],["E&A BRIDE","Autre","Commerce B2B / Équipements","194 AVENUE ARISTIDE BRIAND","93320","Les Pavillons-sous-Bois","07 67 53 17 90"],["NEXTHABITAT","Immobilier","Immobilier","6-8 Allée Henri Barbusse","93320","Les Pavillons-sous-Bois","01 48 02 41 41"],["FITNESS PARK","Sport","Salle de sport","214 avenue Aristide Briand","93320","Les Pavillons-sous-Bois","01 55 89 07 40"],["BATIGERE IDF","Immobilier","Immobilier","","92300","Levallois-Perret","01 55 23 30 00"],["ACIMMO","Immobilier","Immobilier","68 AVENUE JEAN JACQUES ROUSSEAU","93190","Livry-Gargan","01 43 84 31 46"],["CENTURY 21_Livry","Immobilier","Immobilier","26 AVENUE DU MARECHAL LECLERC","93190","Livry-Gargan","01 48 69 21 21"],["EO IMMO CONSEIL","Immobilier","Immobilier","24 Avenue Aristide Briand","93190","Livry-Gargan","01 43 01 32 60"],["ORPI Livry Gargan Agence 1","Immobilier","Immobilier","23 place de la libération","93190","Livry-Gargan","01 43 32 08 08"],["ORPI Livry Gargan Agence 2","Immobilier","Immobilier","24 av. Aristide Briand","","Livry-Gargan","01 43 01 32 60"],["ASSURANCE _Livry Gargan","Banque / assurance","Assurance","40 AVENUE DU CONSUL NORDLING","93190","Livry-Gargan",""],["ID ASSURANCE","Banque / assurance","Assurance","66 AVENUE J.J ROUSSEAU","93190","Livry-Gargan","06 68 31 70 17"],["RN'3 YAMAHA","Automobile","Automobile & Véhicules","39 AV du général Nordling","93190","Livry-Gargan","01 43 32 07 07"],["MIKAPEN","Maison / déco / bricolage","Cuisines & Menuiserie","38 boulevard de l'Europe","93190","Livry-Gargan","01 43 30 14 46"],["AK IMMO Livry Gargan","Immobilier","Immobilier","1 Boulevard Robert Schuman","93190","Livry-Gargan","01 43 84 39 70 00"],["BANOU CONSEILS ET PATRIMOINE","Immobilier","Immobilier","57 avenue Winston Churchill","93190","Livry-Gargan",""],["GROUPE IMMOBILIS","Immobilier","Immobilier","11 Boulevard Marx Dormoy","93190","Livry-Gargan",""],["RJ IMMO","Immobilier","Immobilier","10 avenue Maréchal Leclerc","93160","Livry-Gargan","06 65 18 28 81"],["SPRD IMMO","Immobilier","Immobilier","9 AVENUE ALBERT THOMAS","93190","Livry-Gargan","01 41 70 13 13"],["ANG Assurance","Banque / assurance","Assurance","83 ave Aristide Briand","93190","Livry-Gargan",""],["TIM AUTOMOBILES","Automobile","Automobile & Véhicules","22 RUE DE PARIS","77230","Longperrier","01 60 03 41 73"],["ACL IMMO","Immobilier","Immobilier","44 RUE DE PARIS","95380","Louvres","01 78 86 40 87"],["ERA MP IMMOBILIER","Immobilier","Immobilier","26 Avenue Franklin Roosevelt","77290","Mitry-Mory","01 64 67 36 61 00"],["FRANKLIN IMMOBILIER","Immobilier","Immobilier","114 AVENUE FRANKLIN ROOSEVELT","77290","Mitry-Mory",""],["GUY HOQUET - Mitry-Mory (77)","Immobilier","Immobilier","16 BIS Avenue Franklin Roosevelt","77290","Mitry-Mory","01 60 21 04 21"],["INTER IMMO MITRY","Immobilier","Immobilier","33 Avenue Jean Baptiste Clément","77290","Mitry-Mory","01 64 67 25 51"],["ORPI","Immobilier","Immobilier","1 rue des entrepreneurs","77290","Mitry-Mory","01 64 27 83 34"],["ORPI - Mitrty Mory","Immobilier","Immobilier","1 rue des entrepreneurs","77290","Mitry-Mory","01 64 27 83 34"],["THYTABEAUTY & SHOP","Autre","Commerce B2B / Équipements","5 AVENUE DU BERRY","77290","Mitry-Mory",""],["GROUPE AUTOMOBILE VILLEPARIS","Automobile","Automobile & Véhicules","22 ROUTE DE CLAYE","77290","Mitry-Mory","01 87 62 34 71"],["KM PNEU","Automobile","Automobile & Véhicules","8 RUE HENRI PESCAROLO","93370","Montfermeil",""],["BKZ","Banque / assurance","Assurance","CC DES SABLON RUE CLAUDE DEBUSSY","95360","Montmagny","01 83 84 96 65"],["SOLIMUT MUTUELLE","Banque / assurance","Assurance","3/5 RUE DE VINCENNES","93100","Montreuil",""],["LT IMMOBILIER","Immobilier","Immobilier","173 RUE DE PARIS","93100","Montreuil","01 83 72 32 75"],["Carissime","Autre","Commerce B2B / Équipements","2 rue du Bac","93360","Neuilly-Plaisance",""],["agence du Baobab NESTENN","Immobilier","Immobilier","1-9 boulevard du maréchal Foch","93330","Neuilly-sur-Marne","01 80 96 38 38"],["NT2JM SPORTS","Sport","Salle de sport","33 RUE DU BALLON","93160","Noisy-le-Grand","01 45 92 13 28"],["ByMyCar","Automobile","Automobile & Véhicules","40 rue de Paris","93130","Noisy-le-Sec","01 48 40 40 64"],["SAS EASYHOME","Immobilier","Immobilier","36 AVENUE JEAN LOLIVE","93500","Pantin",""],["EMA ASSURANCES","Banque / assurance","Assurance","28 RUE GABRIELLE JOSSERAND","93500","Pantin","09 52 04 48 19"],["E2F IMMO LA FORÊT","Immobilier","Immobilier","214 RUE DU BOULEVARD SAINT MARTIN","75010","Paris","01 40 35 05 10"],["HM IMMO","Immobilier","Immobilier","13 BOULEVARD DE LA VILETTE","75010","Paris","01 44 63 00 96"],["CNAV","Banque / assurance","Assurance","11 avenue de Flandre","75019","Paris","09 71 10 39 60"],["JG Conseil","Banque / assurance","Assurance","14 rue de Marignan","75008","Paris",""],["ELEM - BOUTIQUE FERRARI","Automobile","Automobile & Véhicules","76 avenue des Champs-Elysées","75008","Paris",""],["Mobile galaxy","High-tech / téléphonie","Téléphonie & Télécom","82 cours de Vincennes","75012","Paris",""],["DCM Motors","Automobile","Automobile & Véhicules","RENTLINE, 6 RUE D ARMAILLE","75017","Paris",""],["Ixoria Assurance","Banque / assurance","Assurance","72 avenue de Flandre","75019","Paris","01 53 26 85 85"],["ERA","Immobilier","Immobilier","192 RUE DE CRIMÉE","75019","Paris","01 44 65 55 65"],["SCOOP Immobilier","Immobilier","Immobilier","124 rue de Belleville","75020","Paris","01 77 37 07 07"],["RD Assurance","Banque / assurance","Assurance","72 rue des Pyrénées","75020","Paris","01 43 70 47 82"],["RESTO MAT","Autre","Commerce B2B / Équipements","147 RUE DE BAGNOLET","75020","Paris","01 40 30 00 70"],["ELITE AUTO","Automobile","Automobile & Véhicules","20 RUE ALPHONSE PENAUD","75020","Paris","06 56 75 26 38"],["PERMIS LOBA","Automobile","Automobile & Véhicules","43 bis Rue des Pyrénées","75020","Paris","07 52 18 05 05"],["ASG REAL ESTATE","Immobilier","Immobilier","78 boulevard St Germain","75005","Paris","01 42 02 22 22"],["GESTION IMMO FRANCILIENNE","Immobilier","Immobilier","42 RUE GALANDE","75005","Paris","01 42 50 89 55"],["ANFI FRANCE","Immobilier","Immobilier","12-14 BOULEVARD DES CHAMPS","75008","Paris","07 83 63 05 80"],["SAS KEYMEX PRO","Immobilier","Immobilier","3 RUE AUBER","75009","Paris","07 67 36 32 74"],["Case & Repair","High-tech / téléphonie","Téléphonie & Télécom","13 rue des mathurins","75009","Paris","09 75 63 79 53"],["Europe Immo 93","Immobilier","Immobilier","19 rue de Paris","93380","Pierrefitte-sur-Seine","01 42 35 80 80"],["SKYZ","Autre","Commerce B2B / Équipements","9 BIS IMPASSE PIERRE DE GEYTER","93380","Pierrefitte-sur-Seine",""],["Cabinet BISDORFF","Immobilier","Immobilier","138 rue Jean Jaurès","92800","Puteaux","01 47 78 74 74"],["LG Electronics","Autre","Commerce B2B / Équipements","117 Avenue des Nations BP59372 Villepinte","95942","Roissy Ch de Gaulle","01 49 89 89 49"],["SVI Assurances","Banque / assurance","Assurance","161 Rue de la belle étoile","95700","Roissy-en-France","01 48 17 71 71"],["COURTOISIE MOTORS","Automobile","Automobile & Véhicules","3 RUE DES MARGUILLIERS","95700","Roissy-en-France","01 86 30 01 00"],["ALINE CONSEIL","Immobilier","Immobilier","200 AVENUE GASTON ROUSSEL","93230","Romainville","01 48 10 13 95"],["Century 21 Rosny","Immobilier","Immobilier","1, bis avenue Jean Jaures","93110","Rosny-sous-Bois",""],["ELEC CONSEIL","Banque / assurance","Assurance","4 place CARNOT","93110","Rosny-sous-Bois","01 49 46 04 49"],["Agence ORPI - Saint Denis","Immobilier","Immobilier","19 bis bouevard Carnot","93200","Saint-Denis","01 48 22 88 48"],["SDH ASSURANCES","Banque / assurance","Assurance","47 RUE JEAN JAURES","93200","Saint-Denis","01 48 20 98 27"],["Centre sportif Moving","Sport","Salle de sport","35 boulevard carnot","93200","Saint-Denis","01 42 43 85 00"],["BEN AUTO","Automobile","Automobile & Véhicules","16-20 Rue Bailly","93210","Saint-Denis Cedex","06 62 27 10 24"],["FT TRANSACTION IDF NORD","Immobilier","Immobilier","214 Bld de la gare","95210","Saint-Gratien",""],["UB Assurances","Banque / assurance","Assurance","1 rue Dieumegard","93400","Saint-Ouen","01 47 87 70 50"],["UNI-BEP ASSURANCES","Banque / assurance","Assurance","12 Rue Anselme","93400","Saint-Ouen","01 79 97 76 21"],["SAMY TELECOM","High-tech / téléphonie","Téléphonie & Télécom","64 av Gabriel Péri","93400","Saint-Ouen","01 40 10 80 87"],["AB IMMO","Immobilier","Immobilier","8 PLACE GASTON BUSSIERE","93270","Sevran","01 41 52 21 10"],["ABEILLE IMMO - Sevran (93)","Immobilier","Immobilier","17 avenue de Livry","93270","Sevran","01 41 52 20 15"],["AGENCE DE LA PLACE","Immobilier","Immobilier","8 PLACE GASTON BUSSIÈRE","93270","Sevran","07 61 33 90 10"],["CASAMAX LA FORET","Immobilier","Immobilier","49 BOULEVARD WESTINGHOUSE","93270","Sevran","01 83 90 17 79"],["DH IMMOBILIER - ORPI","Immobilier","Immobilier","9 ave Robert BALLANGER","93270","Sevran","01 41 52 35 52"],["ORPI - Sevran (93)","Immobilier","Immobilier","106 rte des Petits Ponts","","Sevran","01 75 91 76 99"],["ORPI DH IMMOBILIER","Immobilier","Immobilier","8 place GAston Buissière","93270","Sevran","01 41 52 35 52"],["JUST ASSUR","Banque / assurance","Assurance","12 rue Lucien Sportiss","93270","Sevran","01 75 91 76 47"],["toutassurance","Banque / assurance","Assurance","95 rue d' aulnay","93270","Sevran","06 60 88 12 31"],["PERFIA","Immobilier","Immobilier","90 AV DE LIVRY","93270","Sevran","01 43 10 11 40"],["FITNESS PARK","Sport","Salle de sport","13 PLACE AUGUSTE CRETIER","93270","Sevran",""],["FITNESS PARK Sevran","Sport","Salle de sport","13 Place Auguste Crétier","93270","Sevran",""],["LC FITNESS SEVRAN","Sport","Salle de sport","13 PLACE AUGUSTE CRETIER","93270","Sevran","06 98 51 89 84"],["SFR LE CARRE ROUGE","High-tech / téléphonie","Téléphonie & Télécom","Route des Petits Ponts","93270","Sevran","01 75 91 57 88"],["SFR SEVRAN","High-tech / téléphonie","Téléphonie & Télécom","ROUTE DES PETITS PONTS","93270","Sevran",""],["HD IMMO","Immobilier","Immobilier","9 RUE DE LA BANNIERE","02200","Soisson","03 23 53 63 61"],["Maison Discount","High-tech / téléphonie","Téléphonie & Télécom","42 Boulevard maxime gorki","93240","Stains","01 48 26 92 38"],["AF IMMOBILIER","Immobilier","Immobilier","4 AVENUE PASTEUR","93290","Tremblay-en-France","01 48 63 84 84"],["ARTHURIMMO.COM - TREMBLAY AND CO","Immobilier","Immobilier","1 rue de Flandre","93290","Tremblay-en-France","01 48 65 46 17"],["AT IMMOBILIER","Immobilier","Immobilier","106 route des petits ponts","93290","Tremblay-en-France","01 75 91 76 99"],["CENTURY 21 VERT GALANT","Immobilier","Immobilier","161 AVENUE GILBERT BERGER","93290","Tremblay-en-France","01 49 47 13 45"],["CENTURY 21 Vert-Galant","Immobilier","Immobilier","161 Avenue Gilbert Berger","93290","Tremblay-en-France",""],["DFC Immobilier","Immobilier","Immobilier","12 avenue Pasteur","93290","Tremblay-en-France","01 48 61 63 03"],["EFFICITY IMMOBILIER","Immobilier","Immobilier","24 AVENUE ERNEST RENAN","93290","Tremblay-en-France",""],["ORPI Tremblay France","Immobilier","Immobilier","106 route des Petits Ponts","00093","Tremblay-en-France","01 75 91 76 99"],["SARL AF IMMO","Immobilier","Immobilier","4 AVENUE PASTEUR","93290","Tremblay-en-France","01 49 63 84 84"],["La banque postale","Banque / assurance","Banque","2 bd de l'hôtel de ville","93290","Tremblay-en-France","01 41 51 15 88"],["LA POSTE - TREMBLAY EN FRNCE","Banque / assurance","Banque","2 BD DE L'HOTEL DE VILLE","93290","Tremblay-en-France","01 41 51 30 09"],["FITNESS PARK Roissy","Sport","Salle de sport","C Cial Aéroville","93290","Tremblay-en-France","01 88 60 06 76"],["FITNESS ROISSY","Sport","Salle de sport","87 RUE DE L'ETANG","93290","Tremblay-en-France","01 85 10 06 90"],["OXYTY ROISSY","Sport","Salle de sport","87 RUE DE L'ETANG","93290","Tremblay-en-France",""],["TEL & COM","High-tech / téléphonie","Téléphonie & Télécom","20 cours de le République","93290","Tremblay-en-France","01 48 60 04 89"],["Clarté Fênetre","Maison / déco / bricolage","Cuisines & Menuiserie","15 Av Pasteur","93290","Tremblay-en-France","01 85 10 05 88"],["LA DYF IMMOBILIERE","Immobilier","Immobilier","198 rue de Meaux","93410","Vaujours","01 48 61 32 12"],["JD AUTO","Automobile","Automobile & Véhicules","3 RUE DE LA JUSTICE","93410","Vaujours",""],["OUTREBON IMMOBILIER","Immobilier","Immobilier","31 Avenue Outrebon","93250","Villemomble","01 41 58 60 20"],["ASSURANCE _ Villemonble","Banque / assurance","Assurance","40 BLD D'AULNAY","93250","Villemomble","07 67 73 36 66"],["SIIA ASSURANCES","Banque / assurance","Assurance","20 RUE BERNARD GANTE","93250","Villemomble","01 49 35 77 50"],["LA POSTE - Villeneuve la Garenne","Banque / assurance","Banque","1 avenue jean Moulin","","Villeneuve-la-Garenne","06 66 96 60 45"],["Le Poids Lourd 92","Automobile","Automobile & Véhicules","39 avenue du 8 Mai 1945","92390","Villeneuve-la-Garenne","01 41 47 32 00"],["Agence Paris Est","Immobilier","Immobilier","3 Rue Jean Jaurès","77270","Villeparisis","01 64 27 01 27"],["AK IMMO Villeparisis","Immobilier","Immobilier","129 Avenue Eugène Varlin","77270","Villeparisis","01 60 27 92 76"],["Cabinet Alix","Immobilier","Immobilier","130, avenue Eugène Varlin","77270","Villeparisis","01 64 27 00 70"],["Century 21","Immobilier","Immobilier","58 rue de Ruzé","77270","Villeparisis","01 60 21 52 21"],["CCA ASSURE & CO","Banque / assurance","Assurance","134 AVENUE EUGENE VARLIN","77270","Villeparisis","01 60 35 07 38"],["LA POSTE - Villeparisis (77)","Banque / assurance","Banque","Place Henri Barbusse","77270","Villeparisis",""],["DELEG AUTO_Villeparisis","Automobile","Automobile & Véhicules","148 AVENUE EUGENE VARLIN","77270","Villeparisis",""],["DFJC","Immobilier","Immobilier","155 avenue Eugène VARLIN","77270","Villeparisis","06 65 78 01 10"],["ETIMO","Immobilier","Immobilier","153 avenue eugene VARLIN","77270","Villeparisis","01 64 67 37 37"],["FDA","Maison / déco / bricolage","Cuisines & Menuiserie","9, avenue Lefevre","77270","Villeparisis","01 64 77 13 08"],["TIM PIECES AUTO","Automobile","Automobile & Véhicules","65 Avenue Eugene VARLIN","77270","Villeparisis","06 50 60 90 18"],["AUBRY immobilier","Immobilier","Immobilier","129 bd Robert Ballanger","93420","Villepinte","01 43 83 85 22"],["ERA NOUVELLE AVENUE","Immobilier","Immobilier","6 place Degeyter","93420","Villepinte","01 48 60 00 00 00"],["Michel Gestion - FNAIM","Immobilier","Immobilier","39, avenue de la Gare","93420","Villepinte","01 80 90 99 20"],["NOTRE AGENCE","Immobilier","Immobilier","218 Boulevard Robert Ballanger 218, Boulevard Robert Ballanger","93420","Villepinte","01 43 84 57 34"],["ORPI AT IMMO","Immobilier","Immobilier","39 AVENUE DE LA GARE","93420","Villepinte",""],["STEPHANE PLAZA IMMOBILIER","Immobilier","Immobilier","5 AVENUE DE LA REPUBLIQUE","93420","Villepinte","01 87 53 65 01"],["BDM ASSURANCE","Banque / assurance","Assurance","27 BIS AVENUE DE LA VILLE NEUVE","93420","Villepinte","06 13 30 14 81"],["LA POSTE - VILLEPINTE","Banque / assurance","Banque","183 bd Robert Ballanger","93420","Villepinte","01 49 36 21 16"],["ATMOSSE","Autre","Commerce B2B / Équipements","23 allée Louis Breguet","93420","Villepinte",""],["superette MILA","Autre","Commerce B2B / Équipements","50 avenue Emile Dambel","93420","Villepinte",""],["MM CAR","Automobile","Automobile & Véhicules","12 avenue Charles d gaulle","93420","Villepinte",""],["RENAULT DACIA_Concessionnaire","Automobile","Automobile & Véhicules","7-9 Avenue Georges Clémenceau","93420","Villepinte","01 48 61 96 65"],["Agence Michel - Villepinte (93)","Immobilier","Immobilier","39 Avenue de la Gare","93420","Villepinte","01 80 90 99 20"],["KELLER WILLIAMS EVIDENCE","Immobilier","Immobilier","20 allée des Erables","93420","Villepinte","07 50 21 16 04"],["KW IMMO","Immobilier","Immobilier","20 ALLEE DES ERABLES","93420","Villepinte",""],["TANIA DE LA CRUZ","Immobilier","Immobilier","20 23 RUE DES ERABLES","93420","Villepinte","06 21 10 63 55"],["ADIS LOCATION","Automobile","Automobile & Véhicules","BOULEVARD DU PRESIDENT KENNEDY","93420","Villepinte",""],["Gymnase VICTOR HUGO","Sport","Salle de sport","","93420","Villepinte",""],["LBL FITNESS PARK","Sport","Salle de sport","1 av Georges Clémenceau","93420","Villepinte",""],["GARAGE DIDEROT PEUGEOT","Automobile","Automobile & Véhicules","166-170 bd Robert Ballanger","93420","Villepinte",""],["IMA iMMOBILIER","Immobilier","Immobilier","5 BIS RUE DU MOUTIER","95570","Attainville","06 21 10 63 55"],["Wave Moto","Automobile","Automobile & Véhicules","10 rue de penthièvre","75008","Paris",""]].map(x=>({nom:x[0],type:x[1],cat:x[2],adresse:x[3],cp:x[4],ville:x[5],tel:x[6]}));
+const dirState={cat:"Toutes",city:"Toutes",q:"",limit:60};
+
+function isInMyList(p){
+  const nn=norm(p.nom),nv=norm(p.ville);
+  return S.companies.some(c=>norm(c.nom)===nn&&(!nv||norm(c.ville)===nv));
+}
+function addFromAnnuaire(p,silent){
+  const dup=S.companies.find(c=>norm(c.nom)===norm(p.nom)&&norm(c.ville)===norm(p.ville));
+  if(dup){if(!silent)toast(p.nom+" est déjà dans ta liste.");return dup}
+  const adrFull=[p.adresse,p.cp].filter(Boolean).join(" ");
+  const c={id:uid(),periode:curPeriod(),nom:p.nom,type:p.type||"Autre",ville:p.ville||"",adresse:adrFull,tel:p.tel||"",email:"",contact:"",trajet:"",source:"Réseau du lycée",refs:[],avis:"",notes:p.cat?"Spécialité Vente · "+p.cat:"",events:[],next:null,created:Date.now()};
+  S.companies.push(c);save();
+  if(!silent)toast("✓ "+p.nom+" ajoutée à ta liste d'entreprises !");
+  return c;
+}
+function buildDirBlock(inModal){
+  const myVille=norm(P().ville||"");
+  const cats=["Toutes",...new Set(ANNUAIRE_VENTE.map(x=>x.cat))];
+  const cityCounts={};ANNUAIRE_VENTE.forEach(x=>{if(x.ville)cityCounts[x.ville]=(cityCounts[x.ville]||0)+1});
+  const topCities=Object.entries(cityCounts).sort((a,b)=>b[1]-a[1]).slice(0,10).map(x=>x[0]);
+  if(P().ville){const match=Object.keys(cityCounts).find(v=>norm(v)===myVille);if(match&&!topCities.includes(match))topCities.unshift(match)}
+  const qn=norm(dirState.q);
+  let res=ANNUAIRE_VENTE.filter(x=>(dirState.cat==="Toutes"||x.cat===dirState.cat)&&(dirState.city==="Toutes"||x.ville===dirState.city)&&(!qn||norm(x.nom+" "+x.ville+" "+x.adresse+" "+x.cp+" "+x.cat).includes(qn)));
+  res.sort((a,b)=>{
+    const am=myVille&&norm(a.ville)===myVille?0:1,bm=myVille&&norm(b.ville)===myVille?0:1;
+    return (am-bm)||a.ville.localeCompare(b.ville)||a.nom.localeCompare(b.nom);
+  });
+  const shown=res.slice(0,dirState.limit);
+  return `<div class="panel" style="gap:14px">
+    <div class="row" style="justify-content:space-between;align-items:flex-start">
+      <div><span class="eyebrow">Spécialité Vente (Bac Pro MCV option B)</span><h2>🏫 Annuaire des entreprises partenaires (${ANNUAIRE_VENTE.length})</h2>
+      <p class="hint" style="margin:2px 0 0">Entreprises ayant déjà accueilli nos stagiaires en Vente. Clique sur <b>+ Cibler</b> pour ajouter une entreprise à ton carnet avec son adresse et son téléphone.</p></div>
+      ${inModal?`<button type="button" class="btn ghost sm" data-close-dir>Fermer</button>`:""}
+    </div>
+    <input class="inp" id="dir-q" type="search" placeholder="🔍 Rechercher une enseigne (ex. Orpi, AXA, Peugeot), une ville, une rue ou un code postal…" value="${esc(dirState.q)}">
+    <div class="fld"><span class="lab">Filtrer par secteur Vente</span><div class="chips" id="dir-cats">${cats.map(c=>`<button type="button" class="chip" data-c="${esc(c)}" aria-pressed="${c===dirState.cat}">${esc(c)}</button>`).join("")}</div></div>
+    <div class="fld"><span class="lab">Filtrer par ville</span><div class="chips" id="dir-cities"><button type="button" class="chip" data-v="Toutes" aria-pressed="${dirState.city==="Toutes"}">Toutes les villes<span class="n">${ANNUAIRE_VENTE.length}</span></button>${topCities.map(v=>`<button type="button" class="chip" data-v="${esc(v)}" aria-pressed="${v===dirState.city}">${esc(v)}<span class="n">${cityCounts[v]}</span></button>`).join("")}</div></div>
+    <div class="row" style="justify-content:space-between"><span class="hint"><b>${res.length}</b> entreprise${res.length>1?"s":""} trouvée${res.length>1?"s":""}${dirState.city!=="Toutes"?" à "+esc(dirState.city):""}${dirState.cat!=="Toutes"?" · "+esc(dirState.cat):""}</span>
+      ${dirState.cat!=="Toutes"||dirState.city!=="Toutes"||dirState.q?`<button type="button" class="btn ghost sm" id="dir-reset">Réinitialiser les filtres</button>`:""}
+    </div>
+    <div class="${inModal?"dir-list":"dir-inline"}" id="dir-list">
+      ${shown.map((x,i)=>{
+        const added=isInMyList(x);
+        return `<div class="dir-card"><div><div class="t">${esc(x.nom)} <span class="pill st-cible" style="font-size:.72rem">${esc(x.cat)}</span></div>
+          <div class="sub">📍 ${esc([x.adresse,x.cp,x.ville].filter(Boolean).join(" · "))}${x.tel?` · 📞 <span class="num">${esc(x.tel)}</span>`:""}</div></div>
+          <button type="button" class="btn sm ${added?"soft":""}" data-dir-add="${i}" ${added?"disabled":""}>${added?"✓ Dans ma liste":"+ Cibler"}</button></div>`;
+      }).join("")||`<div class="empty">Aucune entreprise ne correspond à cette recherche.</div>`}
+    </div>
+    ${res.length>dirState.limit?`<button type="button" class="btn soft sm" id="dir-more" style="align-self:center">Afficher plus d'entreprises (${res.length-dirState.limit} restantes)</button>`:""}
+  </div>`;
+}
+function bindDirEvents(root,refreshFn,closeFn){
+  const myVille=norm(P().ville||"");
+  const qn=norm(dirState.q);
+  let res=ANNUAIRE_VENTE.filter(x=>(dirState.cat==="Toutes"||x.cat===dirState.cat)&&(dirState.city==="Toutes"||x.ville===dirState.city)&&(!qn||norm(x.nom+" "+x.ville+" "+x.adresse+" "+x.cp+" "+x.cat).includes(qn)));
+  res.sort((a,b)=>{
+    const am=myVille&&norm(a.ville)===myVille?0:1,bm=myVille&&norm(b.ville)===myVille?0:1;
+    return (am-bm)||a.ville.localeCompare(b.ville)||a.nom.localeCompare(b.nom);
+  });
+  const cl=root.querySelector("[data-close-dir]");cl&&(cl.onclick=closeFn);
+  const dq=root.querySelector("#dir-q");
+  if(dq){
+    dq.oninput=e=>{
+      dirState.q=e.target.value;dirState.limit=60;
+      const pos=dq.selectionStart;
+      refreshFn();
+      const nq=root.querySelector("#dir-q");
+      if(nq){nq.focus();try{nq.setSelectionRange(pos,pos)}catch(err){}}
+    };
+  }
+  const dc=root.querySelector("#dir-cats");
+  dc&&(dc.onclick=e=>{const b=e.target.closest("[data-c]");if(!b)return;dirState.cat=b.dataset.c;dirState.limit=60;refreshFn()});
+  const dv=root.querySelector("#dir-cities");
+  dv&&(dv.onclick=e=>{const b=e.target.closest("[data-v]");if(!b)return;dirState.city=b.dataset.v;dirState.limit=60;refreshFn()});
+  const dr=root.querySelector("#dir-reset");
+  dr&&(dr.onclick=()=>{dirState.cat="Toutes";dirState.city="Toutes";dirState.q="";dirState.limit=60;refreshFn()});
+  const dm=root.querySelector("#dir-more");
+  dm&&(dm.onclick=()=>{dirState.limit+=80;refreshFn()});
+  root.querySelectorAll("[data-dir-add]").forEach(b=>b.onclick=()=>{
+    const p=res[+b.dataset.dirAdd];
+    if(!p)return;
+    if(!S.profile)S.profile={prenom:"Élève",nom:"",diplome:"MCVB",classe:"",lycee:"",ville:"",trajet:45,periodes:1,pfmpStart:"",pfmpEnd:"",pfmp2Start:"",pfmp2End:""};
+    addFromAnnuaire(p,false);
+    refreshFn();
+  });
+}
+function annuaireModal(){
+  modal(buildDirBlock(true),close=>{
+    $("#mbox").style.maxWidth="760px";
+    const refresh=()=>{
+      $("#mbox").innerHTML=buildDirBlock(true);
+      bindDirEvents($("#mbox"),refresh,()=>{$("#mbox").style.maxWidth="";close();render()});
+    };
+    bindDirEvents($("#mbox"),refresh,()=>{$("#mbox").style.maxWidth="";close();render()});
+  });
+}
+
+/* ================= entreprises ================= */
+function renderShops(){
+  const counts={all:S.companies.length};S.companies.forEach(c=>{const s=cStatus(c);counts[s]=(counts[s]||0)+1});
+  const q=norm(ui.q);
+  let list=S.companies.filter(c=>(ui.filter==="all"||cStatus(c)===ui.filter)&&(!q||norm(c.nom+" "+c.ville+" "+c.type).includes(q)));
+  const order={attente:0,entretien:0,cible:1,accepte:2,refus:3};
+  list.sort((a,b)=>{const ta=a.next&&a.next.date||"9999",tb=b.next&&b.next.date||"9999";return (order[cStatus(a)]-order[cStatus(b)])||ta.localeCompare(tb)||a.nom.localeCompare(b.nom)});
+  const sel=S.companies.find(c=>c.id===ui.sel);
+  const wide=window.matchMedia("(min-width:1100px)").matches;
+  const partners=(S.config.partners||[]).filter(p=>!S.companies.some(c=>norm(c.nom)===norm(p.nom)));
+  const mode=ui.shopMode||"carnet";
+  if(sel&&!wide&&mode==="carnet"){$("#main").innerHTML=`<div class="wrap">${detailHTML(sel)}</div>`;bindDetail(sel);return}
+  const listHTML=`<div class="clist">${list.map(cardHTML).join("")||`<div class="empty">${S.companies.length?"Aucune entreprise dans ce filtre.":"Ta liste personnelle est vide pour l'instant.<br><br><button type=\"button\" class=\"btn\" id=\"emptyOpenDir\">🏫 Parcourir les "+ANNUAIRE_VENTE.length+" entreprises Vente du lycée</button>"}</div>`}</div>`;
+  $("#main").innerHTML=`<div class="wrap" style="${wide&&mode==="carnet"?"max-width:1280px":""}">
+    <div class="pagehead">
+      <div><span class="eyebrow">Ma prospection</span><h1>Entreprises</h1><p>${S.companies.length} ciblée${S.companies.length>1?"s":""} dans mon carnet · objectif ${S.config.objectif}</p></div>
+      <div class="row">
+        <button type="button" class="btn ${mode==="annuaire"?"":"soft"}" id="toggleDir">🏫 ${mode==="annuaire"?"Voir mon carnet ("+S.companies.length+")":"Annuaire Vente du lycée ("+ANNUAIRE_VENTE.length+")"}</button>
+        <button type="button" class="btn" id="addCo">+ Ajouter une entreprise</button>
+      </div>
+    </div>
+    <div class="tabs" role="tablist">
+      <button type="button" role="tab" id="tabCarnet" aria-selected="${mode==="carnet"}">📋 Mon carnet (${S.companies.length})</button>
+      <button type="button" role="tab" id="tabAnnuaire" aria-selected="${mode==="annuaire"}">🏫 Annuaire Vente du lycée (${ANNUAIRE_VENTE.length} entreprises)</button>
+    </div>
+    ${mode==="annuaire"?`<div id="inlineDirWrap">${buildDirBlock(false)}</div>`:`
+      ${partners.length?`<section class="panel"><h2>Le réseau du lycée <small>entreprises partenaires proposées par ton prof</small></h2><div class="chips">${partners.map((p,i)=>`<button class="chip" data-partner="${i}">+ ${esc(p.nom)}${p.ville?" · "+esc(p.ville):""}</button>`).join("")}</div></section>`:""}
+      <div class="chips" role="group" aria-label="Filtrer">${[["all","Toutes"],...Object.entries(STATUS)].map(([k,l])=>`<button class="chip" data-f="${k}" aria-pressed="${ui.filter===k}">${l}<span class="n">${counts[k]||0}</span></button>`).join("")}</div>
+      <input class="inp" id="q" type="search" placeholder="Rechercher dans mon carnet…" value="${esc(ui.q)}">
+      <div class="split ${sel?"has":""}">${listHTML}${sel?`<div class="detail panel">${detailHTML(sel,true)}</div>`:""}</div>
+    `}
+  </div>`;
+  $("#addCo").onclick=()=>companyForm(null);
+  $("#toggleDir").onclick=()=>{ui.shopMode=mode==="annuaire"?"carnet":"annuaire";renderShops()};
+  $("#tabCarnet").onclick=()=>{ui.shopMode="carnet";renderShops()};
+  $("#tabAnnuaire").onclick=()=>{ui.shopMode="annuaire";renderShops()};
+  const eod=$("#emptyOpenDir");eod&&(eod.onclick=()=>{ui.shopMode="annuaire";renderShops()});
+  if(mode==="annuaire"){
+    bindDirEvents($("#inlineDirWrap"),()=>renderShops(),()=>{ui.shopMode="carnet";renderShops()});
+    return;
+  }
+  $("#main").querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{ui.filter=b.dataset.f;renderShops()});
+  $("#main").querySelectorAll("[data-partner]").forEach(b=>b.onclick=()=>{const p=partners[+b.dataset.partner];const c={id:uid(),nom:p.nom,type:p.type||"Autre",ville:p.ville||"",adresse:p.adresse||"",tel:p.tel||"",email:"",contact:p.contact||"",trajet:"",source:"Réseau du lycée",refs:[],avis:"",notes:p.note||"",events:[],next:null,created:Date.now()};S.companies.push(c);save();ui.sel=c.id;toast(p.nom+" ajoutée à ta liste.");renderShops()});
+  const qi=$("#q");qi.oninput=()=>{ui.q=qi.value;const pos=qi.selectionStart;renderShops();const n=$("#q");n.focus();try{n.setSelectionRange(pos,pos)}catch(e){}};
+  $("#main").querySelectorAll(".ccard").forEach(b=>b.onclick=()=>{ui.sel=b.dataset.id;renderShops();if(!wide)$("#main").scrollTop=0});
+  if(sel)bindDetail(sel);
+}
+function cardHTML(c){const st=cStatus(c),f=fit(c),t=today();let nx="";
+  if((st==="attente"||st==="entretien")&&c.next&&c.next.date){nx=c.next.date<t?`<span class="pill due">Relance en retard</span>`:c.next.date===t?`<span class="pill due">Relance aujourd'hui</span>`:`<span class="pill soon">${esc(c.next.label)} · ${fd(c.next.date)}</span>`}
+  return `<button class="ccard" data-id="${c.id}" ${ui.sel===c.id?'style="border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)"':""}><span class="t">${esc(c.nom)}</span><span class="pill st-${st}">${STATUS[st]}</span>
+    <span class="m">${nP()===2?`<span class="pill st-cible">P${cPer(c)}</span>`:""}${esc([c.ville,c.type].filter(Boolean).join(" · "))}${c.refs.length?` <span class="pill ${f>=MIN_FIT?"fit":"nofit"}">${f}/${D().acts.length} activités</span>`:""}${nx}${c.proof?'<span class="pill" style="background:var(--stamp-soft);color:var(--stamp)">Attestation</span>':""}</span></button>`}
+function detailHTML(c,inPanel){
+  const st=cStatus(c),f=fit(c),acts=D().acts;
+  return `<div class="row" style="justify-content:space-between">${inPanel?"":`<button class="btn ghost sm" id="back">← Liste</button>`}<span class="pill st-${st}">${STATUS[st]}</span></div>
+    <div><h1 style="font-family:var(--f-display);font-weight:800;font-size:1.45rem;line-height:1.15">${esc(c.nom)}</h1><p class="hint" style="margin:4px 0 0">${nP()===2?"Période "+cPer(c)+" · ":""}${esc([c.type,c.adresse,c.ville].filter(Boolean).join(" · "))}${c.trajet?` · ${esc(c.trajet)} min de trajet`:""}</p>
+    ${c.contact?`<p style="margin:4px 0 0">Contact : <b>${esc(c.contact)}</b></p>`:""}${c.tel?`<p style="margin:2px 0 0" class="num">${esc(c.tel)}</p>`:""}</div>
+    ${(st==="attente"||st==="entretien")&&c.next?`<div class="banner" style="background:${c.next.date<=today()?"var(--danger-soft)":"var(--accent-soft)"}"><b>Prochaine étape : ${esc(c.next.label)}, ${c.next.date<today()?"en retard depuis le "+fdl(c.next.date):c.next.date===today()?"aujourd'hui":"le "+fdl(c.next.date)}</b><span style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn sm" id="calNext">📅 Me le rappeler</button><button class="btn sm ghost" id="chgNext">Changer</button></span></div>`:""}
+    <div><span class="lab">J'ai fait…</span><div class="actions" style="margin-top:8px">${Object.entries(EV).map(([k,e])=>`<button data-ev="${k}"><span>${e.ic}</span>${esc(e.l.replace("Accord pour la PFMP","C'est oui !"))}</button>`).join("")}<button data-prep="1"><span>🎯</span>Préparer</button></div></div>
+    <div><span class="lab">Historique</span>${c.events.length?`<div class="tl" style="margin-top:10px">${c.events.slice().reverse().map(e=>`<div class="ev ${e.type}"><button class="x" data-delev="${e.id}" aria-label="Supprimer">✕</button><span class="d">${fd(e.date)}</span><br><b>${EV[e.type].ic} ${esc(EV[e.type].l)}</b>${e.reason?` · ${esc(e.reason)}`:""}${e.note?`<br><span class="hint">${esc(e.note)}</span>`:""}</div>`).join("")}</div>`:`<p class="hint">Pas encore de démarche. Prépare ta visite, puis note-la ici.</p>`}</div>
+    ${st==="refus"||c.proof?`<div class="panel" style="padding:14px;background:var(--stamp-soft);border-color:transparent"><h2 style="font-size:.95rem">Attestation de passage</h2>${c.proof?`<div class="proof">${c.proof.sig?`<img src="${c.proof.sig}" alt="Signature">`:""}<div><b>${esc(c.proof.answer||"")}</b> · ${fd(c.proof.date)}<br><span class="hint">${esc([c.proof.name,c.proof.role].filter(Boolean).join(", ")||"Signée par l'entreprise")}</span></div></div>`:`<p class="hint" style="margin:0">Un refus prouve que tu as cherché. Fais signer ton attestation sur l'écran : elle compte pour ton professeur.</p>`}<button class="btn sm ${c.proof?"ghost":""}" id="sign">${c.proof?"Refaire l'attestation":"Faire signer l'attestation"}</button></div>`:`<button class="btn ghost sm" id="sign" style="align-self:flex-start">Faire signer une attestation de passage</button>`}
+    <div><span class="lab">Ce que je pourrai faire là-bas (${esc(D().label)})</span>
+      <p class="hint" style="margin:4px 0 8px">Coche ce que l'entreprise permet de faire : demande-le pendant ta visite. ${MIN_FIT} activités ou plus = entreprise adaptée à ton diplôme.</p>
+      <div class="refgrid">${acts.map(([k,l])=>`<label><input type="checkbox" data-ref="${k}" ${c.refs.includes(k)?"checked":""}>${esc(l)}</label>`).join("")}</div>
+      <p style="margin:8px 0 0"><span class="pill ${f>=MIN_FIT?"fit":"nofit"}">${f>=MIN_FIT?"Adaptée à ton diplôme":f?"À vérifier : "+f+" activité(s)":"Pas encore vérifiée"}</span></p></div>
+    <div class="fld"><label for="c-notes">Mes notes</label><textarea class="inp" id="c-notes" placeholder="Horaires d'affluence, nom entendu, ce qu'on t'a dit…">${esc(c.notes)}</textarea></div>
+    <div class="row"><button class="btn ghost sm" id="editCo">Modifier les informations</button><button class="btn ghost sm" id="delCo" style="color:var(--danger)">Supprimer</button></div>`;
+}
+function bindDetail(c){
+  const b=$("#back");b&&(b.onclick=()=>{ui.sel=null;renderShops()});
+  $("#main").querySelectorAll("[data-ev]").forEach(x=>x.onclick=()=>eventForm(c,x.dataset.ev));
+  $("#main").querySelector("[data-prep]").onclick=()=>{ui.prepCo=c.id;go("prep")};
+  $("#main").querySelectorAll("[data-delev]").forEach(x=>x.onclick=()=>confirmBox("Supprimer cette démarche ?","Elle sera retirée de ton historique.","Supprimer",()=>{c.events=c.events.filter(e=>e.id!==x.dataset.delev);recomputeNext(c);save();renderShops()},true));
+  $("#main").querySelectorAll("[data-ref]").forEach(x=>x.onchange=()=>{c.refs=x.checked?[...new Set([...c.refs,x.dataset.ref])]:c.refs.filter(r=>r!==x.dataset.ref);save();renderShops()});
+  const n=$("#c-notes");let tm;n.oninput=()=>{c.notes=n.value;clearTimeout(tm);tm=setTimeout(save,400)};
+  $("#editCo").onclick=()=>companyForm(c);
+  $("#delCo").onclick=()=>confirmBox("Supprimer "+c.nom+" ?","L'entreprise et son historique seront supprimés de ton carnet.","Supprimer",()=>{S.companies=S.companies.filter(x=>x!==c);ui.sel=null;save();renderShops()},true);
+  $("#sign").onclick=()=>signModal(c);
+  const cn=$("#chgNext");cn&&(cn.onclick=()=>nextForm(c));
+  const cl=$("#calNext");cl&&(cl.onclick=()=>calModal(c));
+}
+function recomputeNext(c){sortEv(c);const last=c.events[c.events.length-1];if(!last||!EV[last.type].next){c.next=null;return}c.next={date:addD(last.date,S.config.relance[EV[last.type].next]||5),label:EV[last.type].nextL}}
+function companyForm(c){const isNew=!c;c=c||{nom:"",type:"",ville:P().ville||"",adresse:"",tel:"",email:"",contact:"",trajet:"",source:"",avis:""};
+  modal(`<h3>${isNew?"Ajouter une entreprise":"Modifier "+esc(c.nom)}</h3>
+    <div class="fld"><label for="f-nom">Nom de l'enseigne</label><input class="inp" id="f-nom" value="${esc(c.nom)}" placeholder="Ex. Century 21, Orpi, Peugeot…" autocomplete="off"><div class="ac-list" id="f-ac" hidden></div></div>
+    <div class="grid2"><div class="fld"><label for="f-type">Secteur</label><select class="inp" id="f-type"><option value="">Choisir…</option>${SECTEURS.map(s=>`<option ${c.type===s?"selected":""}>${s}</option>`).join("")}</select></div>
+    <div class="fld"><label for="f-ville">Ville</label><input class="inp" id="f-ville" value="${esc(c.ville)}"></div></div>
+    <div class="fld"><label for="f-adr">Adresse</label><input class="inp" id="f-adr" value="${esc(c.adresse)}" placeholder="Facultatif"></div>
+    <div class="grid2"><div class="fld"><label for="f-tel">Téléphone</label><input class="inp" id="f-tel" type="tel" inputmode="tel" value="${esc(c.tel)}" placeholder="Facultatif"></div>
+    <div class="fld"><label for="f-trajet">Trajet depuis chez moi (min)</label><input class="inp" id="f-trajet" type="number" inputmode="numeric" min="0" value="${esc(c.trajet)}" placeholder="Ex. 20"></div></div>
+    <div class="fld"><label for="f-contact">Responsable (si tu le connais)</label><input class="inp" id="f-contact" value="${esc(c.contact)}" placeholder="Facultatif : Mme Dupont, directrice"></div>
+    ${nP()===2?`<div class="fld"><label for="f-per">Pour quelle période ?</label><select class="inp" id="f-per">${[1,2].map(n=>`<option value="${n}" ${(c.periode?cPer(c):curPeriod())===n?"selected":""}>Période ${n}${per(n).start?" (à partir du "+fdl(per(n).start)+")":""}</option>`).join("")}</select></div>`:""}
+    <div class="fld"><label for="f-src">Comment je l'ai trouvée</label><select class="inp" id="f-src">${["","En passant devant","Google Maps","Famille / amis","Réseau du lycée","Ancien élève","Site d'offres","Autre"].map(s=>`<option ${c.source===s?"selected":""} value="${s}">${s||"Choisir…"}</option>`).join("")}</select></div>
+    <div class="acts"><button class="btn ghost" data-x>Annuler</button><button class="btn" data-ok>${isNew?"Ajouter":"Enregistrer"}</button></div>`,close=>{
+    $("#mbox [data-x]").onclick=close;
+    const fn=$("#f-nom"),fac=$("#f-ac");
+    if(isNew&&fn&&fac){
+      fn.oninput=()=>{
+        const q=norm(fn.value);
+        if(q.length<2){fac.hidden=true;fac.innerHTML="";return}
+        const m=ANNUAIRE_VENTE.filter(x=>norm(x.nom+" "+x.ville).includes(q)).slice(0,5);
+        if(!m.length){fac.hidden=true;fac.innerHTML="";return}
+        fac.hidden=false;
+        fac.innerHTML=m.map((x,i)=>`<button type="button" class="ac-item" data-aci="${i}"><span><b>${esc(x.nom)}</b> · ${esc(x.ville)}</span><span class="hint">${esc(x.cat)}</span></button>`).join("");
+        fac.querySelectorAll("[data-aci]").forEach(b=>b.onclick=()=>{
+          const p=m[+b.dataset.aci];
+          fn.value=p.nom;$("#f-type").value=p.type||"Autre";$("#f-ville").value=p.ville||"";$("#f-adr").value=[p.adresse,p.cp].filter(Boolean).join(" ");$("#f-tel").value=p.tel||"";$("#f-src").value="Réseau du lycée";
+          fac.hidden=true;toast("Coordonnées pré-remplies depuis l'annuaire du lycée !");
+        });
+      };
+    }
+    $("#mbox [data-ok]").onclick=()=>{const v=id=>$("#"+id).value.trim();const nom=v("f-nom");if(!nom){toast("Écris le nom de l'entreprise.");return}
+      const tr=+v("f-trajet");if(tr&&P().trajet&&tr>P().trajet)toast(`Attention : ${tr} min de trajet, c'est plus que ton maximum (${P().trajet} min).`);
+      const dup=S.companies.find(x=>x!==c&&norm(x.nom)===norm(nom)&&norm(x.ville)===norm(v("f-ville")));if(dup&&isNew){toast(nom+" est déjà dans ta liste.");close();ui.sel=dup.id;renderShops();return}
+      Object.assign(c,{periode:$("#f-per")?+$("#f-per").value:(c.periode||1),nom,type:v("f-type"),ville:v("f-ville"),adresse:v("f-adr"),tel:v("f-tel"),trajet:v("f-trajet"),contact:v("f-contact"),source:$("#f-src").value});
+      if(isNew){c.id=uid();c.refs=[];c.events=[];c.notes="";c.next=null;c.created=Date.now();S.companies.push(c);ui.sel=c.id}
+      save();close();if(ui.view!=="shops")go("shops");else renderShops();if(isNew)toast(nom+" ajoutée. Prépare ta visite avant d'y aller.")};
+  });
+}
+function eventForm(c,type){const e=EV[type];
+  const nextDays=e.next?S.config.relance[e.next]:0;
+  modal(`<h3>${e.ic} ${esc(e.l)} · ${esc(c.nom)}</h3>
+    <div class="fld"><label for="e-date">Date</label><input class="inp" type="date" id="e-date" value="${today()}" max="${addD(today(),60)}"></div>
+    ${type==="refus"?`<div class="fld"><label for="e-reason">Raison donnée</label><select class="inp" id="e-reason">${REFUS.map(r=>`<option>${r}</option>`).join("")}</select></div>`:""}
+    ${type==="accepte"?`<p class="note banner" style="background:var(--ok-soft)"><b>Bravo ! Pense à faire signer ta convention le plus vite possible.</b></p>`:""}
+    ${type==="accepte"&&nP()===2?`<div class="fld"><label for="e-per">Pour quelle période ?</label><select class="inp" id="e-per">${[1,2].map(n=>`<option value="${n}" ${cPer(c)===n?"selected":""}>Période ${n}${acceptedFor(n)&&acceptedFor(n)!==c?" (déjà trouvée : "+esc(acceptedFor(n).nom)+")":""}</option>`).join("")}</select></div>`:""}
+    <div class="fld"><label for="e-note">Ce qu'on m'a dit</label><textarea class="inp" id="e-note" placeholder="${type==="appel"?"Ex. responsable absent, rappeler jeudi après 14 h":type==="depot"?"Ex. CV laissé à la vendeuse, responsable présent le matin":"Facultatif"}"></textarea></div>
+    ${e.next?`<div class="fld"><label for="e-next">${esc(e.nextL)} le</label><input class="inp" type="date" id="e-next" value="${addD(today(),nextDays)}"><span class="hint">Calculé automatiquement : ${nextDays} jour${nextDays>1?"s":""} après. Tu peux changer la date si on t'a dit de rappeler un autre jour.</span></div>`:""}
+    <div class="acts"><button class="btn ghost" data-x>Annuler</button><button class="btn" data-ok>Enregistrer</button></div>`,close=>{
+    const dt=$("#e-date"),nx=$("#e-next");if(nx)dt.onchange=()=>{nx.value=addD(dt.value,nextDays)};
+    $("#mbox [data-x]").onclick=close;
+    $("#mbox [data-ok]").onclick=()=>{const ev={id:uid(),type,date:dt.value||today(),note:$("#e-note").value.trim(),t:Date.now()};if(type==="refus")ev.reason=$("#e-reason").value;
+      const before=BADGES.filter(b=>b[3]()).map(b=>b[0]);
+      const ep=$("#e-per");if(ep)c.periode=+ep.value;
+      c.events.push(ev);sortEv(c);
+      if(nx)c.next={date:nx.value||addD(ev.date,nextDays),label:e.nextL};else c.next=null;
+      save();close();
+      const won=BADGES.filter(b=>b[3]()&&!before.includes(b[0]));
+      renderShops();renderNav();
+      if(won.length)toast("Nouveau tampon : « "+won.map(w=>w[1]).join(" », « ")+" » !");
+      else if(type==="refus")toast("Un refus, c'est une démarche de plus. Fais signer l'attestation si tu peux.");
+      else if(type==="accepte")toast("Félicitations ! Va dans « Moi » pour suivre ta convention.");
+      else toast(`+${e.pts} points. ${nx?"Relance prévue le "+fdl(c.next.date)+".":""}`);
+      if(type==="refus"&&!c.proof)setTimeout(()=>signModal(c),600)};
+  });
+}
+function nextForm(c){modal(`<h3>Prochaine étape · ${esc(c.nom)}</h3><div class="fld"><label for="n-l">Quoi</label><input class="inp" id="n-l" value="${esc(c.next.label)}"></div><div class="fld"><label for="n-d">Quand</label><input class="inp" type="date" id="n-d" value="${c.next.date}"></div><div class="acts"><button class="btn ghost" data-rm>Plus rien à faire</button><button class="btn" data-ok>Enregistrer</button></div>`,close=>{
+  $("#mbox [data-rm]").onclick=()=>{c.next=null;save();close();renderShops()};
+  $("#mbox [data-ok]").onclick=()=>{c.next={label:$("#n-l").value.trim()||"Relance",date:$("#n-d").value||today()};save();close();renderShops()}})}
+
+/* ---------- rappel dans l'agenda du téléphone ---------- */
+function calDate(c){return c.next.date<today()?today():c.next.date}
+function calText(c){const p=P();return {title:`${c.next.label} · ${c.nom}`,details:[`Cap PFMP : ${c.next.label.toLowerCase()} pour ${c.nom}.`,c.contact?"Contact : "+c.contact:"",c.tel?"Téléphone : "+c.tel:"",c.notes?"Mes notes : "+c.notes:"","Après l'appel, note la démarche dans Cap PFMP."].filter(Boolean).join("\n"),loc:[c.adresse,c.ville].filter(Boolean).join(", ")}}
+function gcalLink(c,time){const t=calText(c),d=calDate(c).replace(/-/g,""),[h,m]=time.split(":").map(Number),e=h*60+m+15;const hm=x=>String(Math.floor(x/60)).padStart(2,"0")+String(x%60).padStart(2,"0")+"00";
+  return "https://calendar.google.com/calendar/render?action=TEMPLATE&text="+encodeURIComponent(t.title)+"&dates="+d+"T"+hm(h*60+m)+"/"+d+"T"+hm(e)+"&ctz=Europe/Paris&details="+encodeURIComponent(t.details)+(t.loc?"&location="+encodeURIComponent(t.loc):"")}
+function icsFor(c,time){const t=calText(c),d=calDate(c).replace(/-/g,""),[h,m]=time.split(":").map(Number),e=h*60+m+15;const hm=x=>String(Math.floor(x/60)).padStart(2,"0")+String(x%60).padStart(2,"0")+"00";const es=x=>String(x).replace(/\\/g,"\\\\").replace(/;/g,"\\;").replace(/,/g,"\\,").replace(/\n/g,"\\n");
+  return ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Cap PFMP//FR","BEGIN:VTIMEZONE","TZID:Europe/Paris","BEGIN:DAYLIGHT","TZOFFSETFROM:+0100","TZOFFSETTO:+0200","TZNAME:CEST","DTSTART:19700329T020000","RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU","END:DAYLIGHT","BEGIN:STANDARD","TZOFFSETFROM:+0200","TZOFFSETTO:+0100","TZNAME:CET","DTSTART:19701025T030000","RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU","END:STANDARD","END:VTIMEZONE","BEGIN:VEVENT","UID:relance-"+c.id+"-"+d+"@cap-pfmp","DTSTAMP:"+new Date().toISOString().replace(/[-:]/g,"").replace(/\.\d+Z$/,"Z"),"DTSTART;TZID=Europe/Paris:"+d+"T"+hm(h*60+m),"DTEND;TZID=Europe/Paris:"+d+"T"+hm(e),"SUMMARY:"+es(t.title),"DESCRIPTION:"+es(t.details),t.loc?"LOCATION:"+es(t.loc):"","BEGIN:VALARM","ACTION:DISPLAY","DESCRIPTION:"+es(t.title),"TRIGGER:-PT10M","END:VALARM","END:VEVENT","END:VCALENDAR"].filter(Boolean).join("\r\n")+"\r\n"}
+function calModal(c){modal(`<h3>📅 Me rappeler de relancer</h3><p style="margin:0">L'appli prépare un rappel ${c.next.date<today()?"<b>aujourd'hui</b> (ta relance est en retard)":"le <b>"+fdl(c.next.date)+"</b>"} : « ${esc(c.next.label)} · ${esc(c.nom)} ».</p>
+  <div class="fld"><label for="cal-t">À quelle heure ?</label><input class="inp" type="time" id="cal-t" value="10:00"><span class="hint">Choisis une heure où tu n'as pas cours et où le magasin est calme (10 h-11 h 30 ou 14 h 30-16 h).</span></div>
+  <div class="acts" style="justify-content:flex-start"><a class="btn" id="cal-g" href="#" target="_blank" rel="noopener">Ajouter à Google Agenda</a>${inFrame?"":'<button class="btn ghost" id="cal-i">Autre agenda (iPhone, Outlook)</button>'}</div>
+  <span class="hint">${inFrame?"Sur iPhone, utilise Google Agenda, ou ouvre l'appli depuis le lien de l'ENT pour l'agenda de l'iPhone.":"Le fichier s'ouvre dans l'agenda du téléphone : accepte l'ajout de l'événement."}</span>
+  <div class="acts"><button class="btn ghost" data-x>Fermer</button></div>`,close=>{
+  const ti=$("#cal-t"),g=$("#cal-g");const upd=()=>{g.href=gcalLink(c,ti.value||"10:00")};upd();ti.oninput=upd;ti.onchange=upd;
+  g.onclick=()=>{setTimeout(()=>{close();toast("Rappel préparé : valide l'événement dans Google Agenda.")},300)};
+  const ib=$("#cal-i");ib&&(ib.onclick=async()=>{const ok=await saveFile(`rappel-${norm(c.nom).replace(/ /g,"-")}.ics`,icsFor(c,ti.value||"10:00"),"text/calendar");if(ok)close()});
+  $("#mbox [data-x]").onclick=close})}
+
+/* ---------- attestation signée à l'écran ---------- */
+function signModal(c){const p=P();
+  modal(`<h3>Attestation de passage</h3>
+    <p class="hint" style="margin:0">Tends ton téléphone au responsable : il lit, choisit sa réponse et signe avec le doigt.</p>
+    <div style="background:var(--bg);border-radius:12px;padding:12px 14px;line-height:1.55">Je confirme que <b>${esc((p.prenom+" "+(p.nom||"")).trim())}</b>, élève en ${esc(p.classe||"Bac pro")} ${p.lycee?"au "+esc(p.lycee):""}, s'est présenté(e) dans l'entreprise <b>${esc(c.nom)}</b> le <b id="sg-dl">${fdl(today())}</b> pour une demande de période de formation en milieu professionnel.</div>
+    <div class="fld"><label>Réponse de l'entreprise</label><div class="chips" id="sg-ans">${["Refus","Candidature à l'étude","Accord"].map((a,i)=>`<button class="chip" data-a="${a}" aria-pressed="${i===(cStatus(c)==="accepte"?2:cStatus(c)==="refus"?0:1)}">${a}</button>`).join("")}</div></div>
+    <div class="grid2"><div class="fld"><label for="sg-name">Nom (facultatif)</label><input class="inp" id="sg-name" placeholder="Nom du responsable"></div><div class="fld"><label for="sg-role">Fonction</label><input class="inp" id="sg-role" placeholder="Ex. responsable de magasin"></div></div>
+    <div class="fld"><label for="sg-date">Date</label><input class="inp" type="date" id="sg-date" value="${today()}"></div>
+    <div class="fld"><span class="lab">Signature</span><canvas class="sigpad" id="sg-pad" aria-label="Zone de signature"></canvas><button class="btn ghost sm" id="sg-clear" style="align-self:flex-start">Effacer la signature</button></div>
+    <div class="acts"><button class="btn ghost" data-x>Annuler</button><button class="btn" data-ok>Valider l'attestation</button></div>`,close=>{
+    let answer=$("#sg-ans [aria-pressed=true]").dataset.a;
+    $("#sg-ans").onclick=e=>{const b=e.target.closest("[data-a]");if(!b)return;answer=b.dataset.a;$("#sg-ans").querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b))};
+    $("#sg-date").onchange=e=>{$("#sg-dl").textContent=fdl(e.target.value)};
+    const cv=$("#sg-pad"),r=cv.getBoundingClientRect(),dpr=Math.min(2,window.devicePixelRatio||1);cv.width=r.width*dpr;cv.height=r.height*dpr;const ctx=cv.getContext("2d");ctx.scale(dpr,dpr);ctx.lineWidth=2.4;ctx.lineCap="round";ctx.lineJoin="round";ctx.strokeStyle="#13213A";
+    let drawing=false,inked=false,last=null;const pt=e=>{const b=cv.getBoundingClientRect();return [e.clientX-b.left,e.clientY-b.top]};
+    cv.onpointerdown=e=>{drawing=true;last=pt(e);cv.setPointerCapture(e.pointerId)};
+    cv.onpointermove=e=>{if(!drawing)return;const p2=pt(e);ctx.beginPath();ctx.moveTo(last[0],last[1]);ctx.lineTo(p2[0],p2[1]);ctx.stroke();last=p2;inked=true};
+    cv.onpointerup=cv.onpointercancel=()=>{drawing=false};
+    $("#sg-clear").onclick=()=>{ctx.clearRect(0,0,cv.width,cv.height);inked=false};
+    $("#mbox [data-x]").onclick=close;
+    $("#mbox [data-ok]").onclick=()=>{if(!inked){toast("La signature est vide : le responsable doit signer dans le cadre.");return}
+      const out=document.createElement("canvas");out.width=360;out.height=Math.round(360*cv.height/cv.width);const o=out.getContext("2d");o.fillStyle="#fff";o.fillRect(0,0,out.width,out.height);o.drawImage(cv,0,0,out.width,out.height);
+      c.proof={answer,name:$("#sg-name").value.trim(),role:$("#sg-role").value.trim(),date:$("#sg-date").value||today(),sig:out.toDataURL("image/jpeg",.7)};
+      save();close();renderShops();toast("Attestation enregistrée : +2 points.")};
+  });
+}
+
+/* ================= préparer ================= */
+const QUAL=[["accueil","la qualité de votre accueil",/accueil|souriant|sympa|aimable|chaleureu|gentil|agreable/,"Accueil"],["conseil","les conseils de votre équipe",/conseil|expli|compet|pro\b|professionnel|ecoute/,"Conseils"],["reactivite","votre réactivité",/rapide|reactiv|vite|efficace/,"Réactivité"],["choix","le choix de vos produits",/choix|large|gamme|produit/,"Choix des produits"],["ambiance","l'ambiance de votre magasin",/ambiance|cadre|deco|propre|beau/,"Ambiance"],["service","votre sens du service",/service|aide|disponib|arrangeant/,"Sens du service"],["vitrine","la mise en valeur de vos produits",/vitrine|present|range|bien organise/,"Mise en valeur"],["equipe","l'esprit d'équipe qu'on ressent chez vous",/equipe|personnel|staff/,"Esprit d'équipe"]];
+const PREP_TABS=[["accroche","Mon accroche"],["trames","Ce que je dis"],["objections","Si on me dit non"],["avant","Avant de partir"],["cv","Mon CV"],["attitude","Mon attitude"]];
+function vars(c){const p=P(),pn=c?cPer(c):undefined,{start,end}=pfmp(pn);return {prenom:p.prenom||"",nom:p.nom||"",classe:p.classe||"",lycee:p.lycee||"",diplome:D().label,debut:start?fdl(start):"",fin:end?fdl(end):"",semaines:weeks(pn)?String(weeks(pn)):"",enseigne:c?c.nom:"",responsable:c&&c.contact?c.contact:""}}
+function fill(tpl,v){return esc(tpl).replace(/\{(\w+)(?:\|([^}]*))?\}/g,(m,k,alt)=>{const x=v[k];if(x)return `<span class="var">${esc(x)}</span>`;return alt!==undefined?(alt?esc(alt):""):`<span class="miss">[${k}]</span>`})}
+function plain(tpl,v){return tpl.replace(/\{(\w+)(?:\|([^}]*))?\}/g,(m,k,alt)=>v[k]||(alt!==undefined?alt:"["+k+"]"))}
+const TRAMES=[
+ ["visite","En magasin : déposer ma candidature",`Bonjour Madame / Monsieur.
+Je m'appelle {prenom} {nom}, je suis élève en {classe} au {lycee}, en {diplome}.
+Je recherche une entreprise pour ma période de formation en milieu professionnel, du {debut} au {fin}.
+Pourrais-je rencontrer {responsable|le ou la responsable du magasin}, s'il vous plaît ?
+
+Si la personne est absente :
+« À quel moment puis-je le ou la rencontrer plus facilement ? »
+« Puis-je vous laisser mon CV et ma lettre à son attention ? Pourriez-vous me donner son nom ? »
+
+Pour finir :
+« Merci beaucoup, je repasse [jour] vers [heure]. Bonne journée ! »`],
+ ["appel","Au téléphone : premier appel",`Bonjour Madame / Monsieur, {prenom} {nom}, élève en {diplome} au {lycee}.
+Je vous appelle pour une demande de période de formation en entreprise de {semaines|quelques} semaines, du {debut} au {fin}.
+Pourrais-je parler à {responsable|la personne qui s'occupe de l'accueil des stagiaires}, s'il vous plaît ?
+
+Si on te dit qu'il ou elle n'est pas là :
+« À quel moment puis-je le ou la rappeler ? »
+« Puis-je laisser mon nom et mon numéro ? Je rappellerai aussi de mon côté. »
+
+Pense à noter l'heure de rappel dans l'appli tout de suite.`],
+ ["relance","Relance après le dépôt",`Bonjour Madame / Monsieur, {prenom} {nom}.
+J'ai déposé ma candidature dans votre magasin le [date] pour une période de formation en entreprise du {debut} au {fin}.
+Je me permets de vous rappeler pour savoir si vous avez pu l'étudier.
+
+Si c'est « pas encore » :
+« Je comprends. Quand puis-je vous rappeler ? »
+
+Si c'est « non » :
+« Je vous remercie d'avoir pris le temps de me répondre. Puis-je repasser faire signer mon attestation de recherche ? »`],
+ ["mail","Mail de candidature",`Objet : Candidature PFMP du {debut} au {fin} · {prenom} {nom}
+
+Madame, Monsieur,
+
+Élève en {classe} au {lycee} ({diplome}), je recherche une entreprise pour ma période de formation en milieu professionnel du {debut} au {fin}.
+
+[Colle ici la phrase de ton accroche.]
+
+Pendant cette période, je souhaite apprendre à accueillir et conseiller vos clients, et participer à la vie de votre {enseigne|entreprise}.
+
+Vous trouverez mon CV en pièce jointe. Je me tiens à votre disposition pour vous rencontrer.
+
+Je vous prie d'agréer, Madame, Monsieur, mes salutations distinguées.
+
+{prenom} {nom}
+[ton numéro de téléphone]`]
+];
+const OBJ=[
+ ["« Nous ne prenons pas de stagiaires cette année. »","Ne raccroche pas tout de suite : demande pourquoi, poliment.",["« Je comprends. Est-ce par manque de temps pour encadrer ? Ma période ne dure que quelques semaines et mon professeur me suit pendant tout le stage. »","« Je comprends. Pourrais-je tout de même vous laisser mon CV, si une place se libère ? »"]],
+ ["« Vous n'avez pas d'expérience. »","Personne n'en a au début : montre ce que tu sais déjà faire.",["« C'est justement pour en acquérir que je fais cette période. J'ai déjà [ton expérience : babysitting, club, aide au marché], ce qui m'a appris à être ponctuel(le) et à rendre service. »","« En cours, on s'entraîne à l'accueil et à la vente. Je suis prêt(e) à apprendre vite. »"]],
+ ["« Repassez plus tard. »","Transforme « plus tard » en un moment précis.",["« Avec plaisir. Quel jour et à quelle heure est-ce le plus pratique pour vous ? »"]],
+ ["« Envoyez-nous un mail. »","Demande l'adresse exacte et le nom de la personne.",["« Très bien. À quelle adresse dois-je l'envoyer, et à l'attention de qui ? Je vous l'envoie aujourd'hui. »"]],
+ ["« On est déjà complets. »","Pense aux périodes suivantes.",["« Je comprends. Prenez-vous des élèves à d'autres périodes de l'année ? Je peux vous laisser mon CV pour la prochaine. »"]],
+ ["« Je n'ai pas le temps, là. »","Respecte son temps et propose un autre moment.",["« Je ne vous dérange pas plus. Quel serait le meilleur moment pour vous présenter ma demande en deux minutes ? »"]]
+];
+const CHECK=[["cv","Mon CV imprimé, en 2 exemplaires","propre, sans pli"],["lettre","Ma lettre de motivation","au nom de l'entreprise"],["conv","Une convention vierge ou l'annexe du lycée","si le prof en a donné"],["tenue","Une tenue adaptée au magasin","propre, simple, pas de casquette"],["trajet","Mon trajet vérifié","je pars avec 10 minutes d'avance"],["heure","Une heure calme","en semaine, 10 h-11 h 30 ou 14 h 30-16 h ; jamais à l'heure du déjeuner, ni le samedi après-midi"],["phrase","Ma phrase d'accroche répétée à voix haute","onglet « Mon accroche »"],["tel","Mon téléphone chargé et en silencieux","je ne le sors pas pendant l'échange"],["note","De quoi noter","le nom du responsable, l'heure de rappel"]];
+const EXPS=[
+ ["babysit","Garde d'enfants / babysitting",["Sens des responsabilités","Patience et écoute"]],
+ ["devoirs","Aide aux devoirs (frères, sœurs, voisins)",["Pédagogie","Capacité à expliquer clairement"]],
+ ["sport","Pratique d'un sport en club",["Esprit d'équipe","Persévérance et régularité"]],
+ ["capitaine","Capitaine ou arbitre dans un club",["Leadership","Gestion des désaccords"]],
+ ["marche","Aide sur un marché ou dans un commerce familial",["Contact client","Rendu de monnaie"]],
+ ["job","Job d'été ou petit boulot",["Ponctualité","Respect des consignes"]],
+ ["benevole","Bénévolat (association, collecte, Restos du cœur…)",["Sens du service","Accueil du public"]],
+ ["delegue","Délégué(e) de classe",["Prise de parole","Écoute et reformulation"]],
+ ["vinted","Vente sur Vinted, Leboncoin…",["Rédaction d'annonces","Négociation et suivi de commande"]],
+ ["reseaux","Création de contenus sur les réseaux sociaux",["Mise en valeur d'un produit","Aisance avec les outils numériques"]],
+ ["langues","Je parle une autre langue",["Accueil de clients étrangers","Adaptation à l'interlocuteur"]],
+ ["stage3e","Stage de 3e ou PFMP précédente",["Première expérience en entreprise","Connaissance des règles professionnelles"]],
+ ["famille","Je m'occupe souvent de ma famille (courses, démarches)",["Organisation","Autonomie"]],
+ ["caisse","J'ai déjà tenu une caisse ou une buvette",["Encaissement","Rigueur avec l'argent"]]
+];
+function coSelect(){return `<div class="fld"><label for="prep-co">Pour quelle entreprise ?</label><select class="inp" id="prep-co"><option value="">Aucune en particulier</option>${S.companies.map(c=>`<option value="${c.id}" ${ui.prepCo===c.id?"selected":""}>${esc(c.nom)}</option>`).join("")}</select></div>`}
+function renderPrep(){
+  const c=S.companies.find(x=>x.id===ui.prepCo),v=vars(c);let body="";
+  if(ui.prepTab==="accroche"){
+    const a=(c&&c.accroche)||{q:[],detail:"",avis:"",lieu:"avis"};
+    body=`<section class="panel"><h2>Ma phrase d'accroche</h2>${coSelect()}
+      <div class="fld"><label for="ac-avis">Un avis client que tu as lu (facultatif)</label><textarea class="inp" id="ac-avis" placeholder="Colle un avis Google ou écris ce qu'on t'a dit du magasin">${esc(a.avis)}</textarea><span class="hint">L'appli repère les qualités citées. Elle ne recopie pas l'avis : parle de ce que tu as vraiment lu ou vu.</span></div>
+      <div class="fld"><span class="lab">Ce que tu as remarqué</span><div class="chips" id="ac-q">${QUAL.map(([k,,,sh])=>`<button class="chip" data-q="${k}" aria-pressed="${a.q.includes(k)}">${esc(sh)}</button>`).join("")}</div></div>
+      <div class="fld"><span class="lab">Où l'as-tu remarqué ?</span><div class="chips" id="ac-l">${[["avis","Dans les avis clients"],["passage","En passant devant"],["client","Je suis client(e)"],["proche","Par un proche"]].map(([k,l])=>`<button class="chip" data-l="${k}" aria-pressed="${a.lieu===k}">${l}</button>`).join("")}</div></div>
+      <div class="fld"><label for="ac-det">Un détail précis (facultatif)</label><input class="inp" id="ac-det" value="${esc(a.detail)}" placeholder="Ex. le rayon running, la carte de fidélité, la vitrine de Noël"></div>
+      <div id="ac-out"></div></section>`;
+  }
+  else if(ui.prepTab==="trames"){
+    body=`<section class="panel">${coSelect()}<p class="hint" style="margin:0">Les mots en bleu viennent de ton profil et de l'entreprise choisie. Les mots en orange manquent : complète ton profil ou dis-les toi-même.</p></section>`+TRAMES.map(([k,t,tpl])=>`<section class="panel"><h2>${esc(t)}</h2><div class="script">${fill(tpl,v)}</div><div class="row"><button class="btn sm soft" data-say="${k}">🔊 Écouter</button><button class="btn sm ghost" data-copy="${k}">Copier</button></div></section>`).join("");
+  }
+  else if(ui.prepTab==="objections"){
+    body=`<section class="panel"><h2>Si on me dit…</h2><p class="hint" style="margin:0">Un « non » n'est pas toujours définitif. Garde le sourire, reformule et propose une solution. Ensuite, entraîne-toi dans « S'entraîner ».</p>${OBJ.map(([q,tip,ans])=>`<details class="obj"><summary>${esc(q)}</summary><div class="b"><span class="hint">${esc(tip)}</span>${ans.map(x=>`<div class="script">${esc(x)}</div>`).join("")}</div></details>`).join("")}</section>`;
+  }
+  else if(ui.prepTab==="avant"){
+    const ck=S.checklist;const n=CHECK.filter(x=>ck[x[0]]).length;
+    body=`<section class="panel"><h2>Avant de partir <small>${n}/${CHECK.length}</small></h2><div class="check">${CHECK.map(([k,l,s])=>`<label><input type="checkbox" data-ck="${k}" ${ck[k]?"checked":""}><span>${esc(l)}<small>${esc(s)}</small></span></label>`).join("")}</div><button class="btn ghost sm" id="ckReset" style="align-self:flex-start">Tout décocher pour la prochaine visite</button></section>`;
+  }
+  else if(ui.prepTab==="cv"){
+    const sel=EXPS.filter(e=>S.exp.includes(e[0]));
+    const qual=[...new Set(sel.flatMap(e=>e[2]))];
+    body=`<section class="panel"><h2>Traducteur d'expériences</h2><p class="hint" style="margin:0">« Je n'ai rien à mettre sur mon CV » : faux ! Coche ce que tu as déjà fait, l'appli le traduit en compétences pour ton CV et ta lettre.</p>
+      <div class="refgrid">${EXPS.map(([k,l])=>`<label><input type="checkbox" data-exp="${k}" ${S.exp.includes(k)?"checked":""}>${esc(l)}</label>`).join("")}</div></section>
+      <section class="panel"><h2>Pour mon CV <small>${qual.length} qualité(s)</small></h2>${sel.length?`<div class="script">${esc("QUALITÉS\n"+qual.map(q=>"• "+q).join("\n")+"\n\nEXPÉRIENCES ET ACTIVITÉS\n"+sel.map(e=>"• "+e[1].split(" (")[0]+" : "+e[2].join(", ").toLowerCase()).join("\n"))}</div>
+      <div class="script">${esc("Pour ma lettre : "+(sel[0]?"grâce à mon expérience ("+sel[0][1].split(" (")[0].toLowerCase()+"), j'ai appris "+sel[0][2].map(x=>x.toLowerCase()).join(" et ")+". ":"")+(sel[1]?"J'ai aussi développé "+sel[1][2][0].toLowerCase()+" en pratiquant "+sel[1][1].split(" (")[0].toLowerCase()+".":""))}</div>
+      <button class="btn sm ghost" id="cvCopy" style="align-self:flex-start">Copier</button>`:'<p class="hint" style="margin:0">Coche au moins une expérience au-dessus.</p>'}</section>`;
+  }
+  else {
+    body=`<section class="panel"><h2>Mon attitude</h2><div class="grid2">
+      ${[["😊","Le premier regard","Souris, dis bonjour en regardant la personne, attends qu'elle ait fini avec un client avant de t'approcher."],
+         ["🗣️","La voix","Parle clairement, pas trop vite. Vouvoie toujours. Pas de « wesh », « genre », « du coup » à chaque phrase."],
+         ["👂","L'écoute","Laisse la personne finir. Montre que tu écoutes : « d'accord », « je comprends ». Reformule : « Si je comprends bien, je repasse jeudi matin ? »"],
+         ["🧍","La posture","Debout bien droit, mains visibles, téléphone rangé, pas de chewing-gum."],
+         ["📝","Les notes","Note le nom du responsable, l'heure de rappel, ce qu'on t'a dit. Fais répéter un nom si besoin : « Pouvez-vous me l'épeler ? »"],
+         ["🙏","La sortie","Remercie toujours, même en cas de refus : un refus poli aujourd'hui peut devenir un oui demain."]].map(([i,t,d])=>`<div style="background:var(--bg);border-radius:12px;padding:12px 14px"><b>${i} ${t}</b><p style="margin:4px 0 0">${d}</p></div>`).join("")}</div></section>`;
+  }
+  $("#main").innerHTML=`<div class="wrap"><div class="pagehead"><div><span class="eyebrow">Avant d'y aller</span><h1>Préparer</h1></div></div>
+    <div class="tabs" role="tablist">${PREP_TABS.map(([k,l])=>`<button role="tab" data-pt="${k}" aria-selected="${ui.prepTab===k}">${l}</button>`).join("")}</div>${body}</div>`;
+  $("#main").querySelectorAll("[data-pt]").forEach(b=>b.onclick=()=>{ui.prepTab=b.dataset.pt;saveUi();renderPrep()});
+  const ps=$("#prep-co");ps&&(ps.onchange=()=>{ui.prepCo=ps.value;renderPrep()});
+  if(ui.prepTab==="accroche")bindAccroche(c);
+  $("#main").querySelectorAll("[data-say]").forEach(b=>b.onclick=()=>speak(plain(TRAMES.find(t=>t[0]===b.dataset.say)[2],v)));
+  $("#main").querySelectorAll("[data-copy]").forEach(b=>b.onclick=()=>copy(plain(TRAMES.find(t=>t[0]===b.dataset.copy)[2],v),"Texte copié."));
+  $("#main").querySelectorAll("[data-ck]").forEach(x=>x.onchange=()=>{S.checklist[x.dataset.ck]=x.checked;save();renderPrep()});
+  const cr=$("#ckReset");cr&&(cr.onclick=()=>{S.checklist={};save();renderPrep()});
+  $("#main").querySelectorAll("[data-exp]").forEach(x=>x.onchange=()=>{S.exp=x.checked?[...new Set([...S.exp,x.dataset.exp])]:S.exp.filter(e=>e!==x.dataset.exp);save();renderPrep()});
+  const cc=$("#cvCopy");cc&&(cc.onclick=()=>copy([...$("#main").querySelectorAll(".script")].map(s=>s.textContent).join("\n\n"),"Copié : colle-le dans ton CV."));
+}
+let acSeed=0;
+function bindAccroche(c){
+  const st=c?(c.accroche=c.accroche||{q:[],detail:"",avis:"",lieu:"avis"}):(ui.acTmp=ui.acTmp||{q:[],detail:"",avis:"",lieu:"avis"});
+  const out=()=>{const v=vars(c);const qs=QUAL.filter(q=>st.q.includes(q[0])).map(q=>q[1]);
+    if(!qs.length){$("#ac-out").innerHTML='<p class="hint" style="margin:0">Choisis au moins une qualité remarquée pour générer ton accroche.</p>';return}
+    const list=qs.length>1?qs.slice(0,-1).join(", ")+" et "+qs[qs.length-1]:qs[0];
+    const det=st.detail?`, notamment ${st.detail}`:"";
+    const src={avis:["J'ai lu dans vos avis que vos clients apprécient","Vos clients parlent souvent, dans leurs avis, de"],passage:["En passant devant votre magasin, j'ai remarqué","J'ai été attiré(e) par"],client:["Je suis client(e) chez vous et j'apprécie","Comme client(e), j'ai toujours apprécié"],proche:["Un proche m'a parlé de","On m'a beaucoup parlé de"]}[st.lieu||"avis"];
+    const s1=src[acSeed%2];
+    const oral=`${s1} ${list}${det}. C'est exactement ce que je veux apprendre pendant ma période de formation${v.debut?`, du ${v.debut} au ${v.fin}`:""}.`;
+    const ecrit=`${v.enseigne?"Votre enseigne "+v.enseigne:"Votre entreprise"} est appréciée pour ${list}${det} ; c'est ce sens du service que je souhaite développer à vos côtés pendant ma période de formation en milieu professionnel${v.semaines?` de ${v.semaines} semaine${+v.semaines>1?"s":""}`:""}${v.debut?`, du ${v.debut} au ${v.fin}`:""}.`;
+    $("#ac-out").innerHTML=`<div class="lab">À dire en magasin ou au téléphone</div><div class="script">${esc(oral)}</div><div class="row"><button class="btn sm soft" id="ac-say">🔊 Écouter</button><button class="btn sm ghost" id="ac-c1">Copier</button><button class="btn sm ghost" id="ac-alt">Autre tournure</button></div>
+      <div class="lab">Pour ta lettre ou ton mail</div><div class="script">${esc(ecrit)}</div><div class="row"><button class="btn sm ghost" id="ac-c2">Copier</button></div>`;
+    $("#ac-say").onclick=()=>speak(oral);$("#ac-c1").onclick=()=>copy(oral,"Accroche copiée.");$("#ac-c2").onclick=()=>copy(ecrit,"Phrase copiée pour ta lettre.");$("#ac-alt").onclick=()=>{acSeed++;out()}};
+  const persist=()=>{if(c)save();out()};
+  $("#ac-q").onclick=e=>{const b=e.target.closest("[data-q]");if(!b)return;const k=b.dataset.q;st.q=st.q.includes(k)?st.q.filter(x=>x!==k):[...st.q,k];b.setAttribute("aria-pressed",st.q.includes(k));persist()};
+  $("#ac-l").onclick=e=>{const b=e.target.closest("[data-l]");if(!b)return;st.lieu=b.dataset.l;$("#ac-l").querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b));persist()};
+  $("#ac-det").oninput=e=>{st.detail=e.target.value.trim();persist()};
+  $("#ac-avis").oninput=e=>{st.avis=e.target.value;const n=norm(st.avis);let added=false;QUAL.forEach(([k,,re])=>{if(re.test(n)&&!st.q.includes(k)){st.q.push(k);added=true}});if(n)st.lieu="avis";if(added){$("#ac-q").querySelectorAll("[data-q]").forEach(b=>b.setAttribute("aria-pressed",st.q.includes(b.dataset.q)));$("#ac-l").querySelectorAll("[data-l]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.l===st.lieu))}persist()};
+  out();
+}
+
+/* ================= simulateur ================= */
+const SCEN=[
+ {id:"comptoir",t:"Le responsable est occupé",d:"En magasin · déposer sa candidature",who:"Vendeuse",nodes:[
+  ["Bonjour, je peux vous aider ?",[
+   ["Bonjour Madame, je m'appelle {prenom}, je suis en {classe}. Je souhaiterais rencontrer le ou la responsable pour une demande de PFMP. Est-il présent ?",2,"Clair : tu te présentes, tu donnes l'objet de ta visite et tu demandes la bonne personne."],
+   ["Euh… c'est pour un stage.",0,"Trop vague. Présente-toi et demande à parler au ou à la responsable."],
+   ["Je veux voir le patron.",0,"Trop direct et familier. Dis plutôt « le ou la responsable », avec une formule de politesse."]]],
+  ["Il est en réunion, là. Repassez une autre fois.",[
+   ["D'accord, je comprends. À quel moment puis-je le rencontrer plus facilement ?",2,"Bien joué : tu transformes « une autre fois » en un moment précis."],
+   ["Je peux attendre, c'est important pour moi.",1,"Ta motivation se voit, mais attendre sans y être invité peut gêner. Demande plutôt un moment précis."],
+   ["Ah… bon, tant pis. Au revoir.",0,"Tu perds un contact. Demande toujours quand repasser."]]],
+  ["Demain vers 10 h, il est plus tranquille. Vous voulez lui laisser quelque chose ?",[
+   ["Oui, voici mon CV et ma lettre à son attention. Pourriez-vous me donner son nom, pour que je le demande demain ?",2,"Parfait : le responsable lira ton dossier avant ta visite, et tu connais son nom."],
+   ["Oui, tenez.",1,"Bien, mais demande son nom : tu pourras le demander directement demain."],
+   ["Non merci, je reviendrai.",1,"Laisser ton dossier permet au responsable de le lire avant de te voir."]]],
+  ["C'est M. Martin. Je lui donne votre dossier.",[
+   ["Merci beaucoup Madame. Je repasse demain vers 10 h. Bonne journée !",2,"Prise de congé réussie : tu remercies et tu confirmes le rendez-vous."],
+   ["Ok merci.",1,"Correct, mais trop court. Remercie et dis quand tu repasses."],
+   ["Super, ciao !",0,"Registre familier : en entreprise, on reste poli jusqu'au bout."]]]]},
+ {id:"pasdestagiaire",t:"« On ne prend pas de stagiaires »",d:"Au téléphone · lever un premier refus",who:"Responsable",nodes:[
+  ["Allô, bonjour.",[
+   ["Bonjour Monsieur, {prenom} {nom}, élève en Bac pro au {lycee|lycée}. Je vous appelle pour une période de formation en entreprise du {debut|[dates]} au {fin|[dates]}. Êtes-vous la personne qui s'occupe des stagiaires ?",2,"Excellent : on sait tout de suite qui tu es et pourquoi tu appelles."],
+   ["Allô, oui bonjour, c'est pour un stage, enfin une PFMP, je sais pas si…",1,"L'intention est bonne, mais prépare ta première phrase : elle doit être claire dès le début."],
+   ["Bonjour, vous prenez des stagiaires ?",0,"Présente-toi d'abord et donne tes dates : ton interlocuteur doit savoir qui appelle."]]],
+  ["Ah non, désolé, on ne prend pas de stagiaires cette année.",[
+   ["Je comprends. Puis-je vous demander si c'est par manque de temps pour encadrer ? Ma période ne dure que quelques semaines.",2,"Tu restes poli et tu cherches la vraie raison du refus : on peut peut-être la lever."],
+   ["S'il vous plaît, j'ai vraiment besoin d'un stage !",0,"Supplier met mal à l'aise. Montre plutôt ce que tu peux apporter."],
+   ["Ah… d'accord, au revoir.",0,"Un refus cache parfois une raison qu'on peut traiter. Pose une question avant de raccrocher."]]],
+  ["C'est surtout qu'on n'a personne pour s'occuper de vous en ce moment.",[
+   ["Je comprends. Mon professeur suit toute la période, et je peux venir me présenter pour que vous voyiez comment je travaille. Accepteriez-vous de me recevoir cinq minutes ?",2,"Tu réponds à son inquiétude et tu proposes une action simple : une rencontre courte."],
+   ["Vous pouvez quand même essayer ?",1,"Trop vague. Propose quelque chose de concret, comme une rencontre de cinq minutes."],
+   ["Pas grave, je me débrouillerai tout seul.",0,"Un tuteur est obligatoire en PFMP. Rassure plutôt sur le suivi du lycée."]]],
+  ["Bon… passez jeudi à 14 h, on verra.",[
+   ["Merci beaucoup ! Jeudi à 14 h, je viendrai avec mon CV. À qui dois-je me présenter ?",2,"Tu remercies, tu confirmes et tu demandes le nom : rendez-vous assuré."],
+   ["Ok, à jeudi.",1,"Correct, mais remercie et vérifie à qui te présenter."],
+   ["Jeudi je peux pas, plutôt vendredi ?",1,"Possible si tu as cours, mais remercie d'abord et propose l'autre date poliment."]]]]},
+ {id:"experience",t:"« Vous n'avez pas d'expérience »",d:"Entretien · convaincre la gérante",who:"Gérante",nodes:[
+  ["Asseyez-vous. Alors, pourquoi notre magasin ?",[
+   ["J'apprécie votre enseigne pour la qualité de son accueil. Je voudrais apprendre à conseiller les clients dans un magasin comme le vôtre.",2,"Tu montres que tu as choisi ce magasin pour une vraie raison."],
+   ["Parce que c'est près de chez moi.",1,"C'est vrai, mais insuffisant : ajoute ce qui te plaît dans ce magasin."],
+   ["Je sais pas, j'ai envoyé partout.",0,"À éviter : prépare une raison propre à chaque entreprise (onglet « Mon accroche »)."]]],
+  ["Vous n'avez jamais travaillé dans la vente, si ?",[
+   ["Pas encore en magasin, mais j'ai déjà gardé des enfants et aidé au marché : j'ai appris la patience et le contact avec les gens. En cours, on s'entraîne aussi à la vente.",2,"Tu transformes ton manque d'expérience en atouts concrets."],
+   ["C'est justement pour ça que je fais un stage !",1,"Bonne idée, mais dis-le calmement et ajoute un exemple concret."],
+   ["Non, jamais.",0,"Tu as forcément des expériences utiles : sport, babysitting, bénévolat… Va voir le traducteur d'expériences."]]],
+  ["Que feriez-vous si un client mécontent arrivait en caisse ?",[
+   ["Je l'écouterais sans le couper, je reformulerais son problème pour être sûr(e) de bien comprendre, puis j'appellerais un responsable si je ne peux pas le régler.",2,"Tu montres l'écoute active et tu connais tes limites de stagiaire."],
+   ["J'appellerais tout de suite le responsable.",1,"Prudent, mais écoute d'abord le client : il veut se sentir compris."],
+   ["Je lui dirais de se calmer.",0,"Ça énerve souvent davantage. Commence par écouter."]]],
+  ["Bien. Vous avez des questions ?",[
+   ["Oui : quelles missions pourrais-je réaliser pendant ma période, et quels seraient mes horaires ?",2,"Poser des questions montre ta motivation. Prépare-en toujours deux."],
+   ["Est-ce que c'est payé ?",1,"Ce n'est pas la première question à poser : commence par les missions et les horaires."],
+   ["Non, ça va.",0,"Sans question, tu sembles peu intéressé(e). Prépare-en deux à l'avance."]]]]},
+ {id:"relance",t:"La relance, 5 jours après",d:"Au téléphone · passer le barrage de l'accueil",who:"Accueil",nodes:[
+  ["Bonjour, boutique Lina Mode.",[
+   ["Bonjour Madame, {prenom} {nom}. J'ai déposé ma candidature lundi pour une période de formation en entreprise. Pourrais-je parler au ou à la responsable ?",2,"Tu rappelles qui tu es, quand tu es passé(e) et pourquoi tu appelles."],
+   ["Bonjour, c'est {prenom}.",1,"Ton interlocutrice ne te connaît pas : rappelle quand et pourquoi tu es passé(e)."],
+   ["Bonjour, vous avez lu mon CV ?",0,"Trop direct, et la personne de l'accueil ne sait pas de quoi tu parles."]]],
+  ["Elle est en rendez-vous. C'est à quel sujet exactement ?",[
+   ["C'est pour savoir si elle a pu étudier ma candidature de PFMP. À quel moment puis-je la rappeler ?",2,"Tu restes précis et tu obtiens un moment pour rappeler."],
+   ["Ah, je rappellerai.",1,"Demande un moment précis, sinon tu risques de retomber au mauvais moment."],
+   ["C'est personnel.",0,"Ce n'est pas personnel : c'est une démarche professionnelle, dis-le clairement."]]],
+  ["Rappelez vers 16 h. Je lui dis que vous avez appelé.",[
+   ["Merci beaucoup Madame, je rappelle à 16 h. Bonne journée.",2,"Parfait. Réflexe : note tout de suite « rappeler à 16 h » dans l'appli."],
+   ["Vous pouvez lui dire de me rappeler plutôt ?",1,"Mieux vaut rester celui ou celle qui rappelle : tu gardes la main."],
+   ["Ok.",1,"Remercie et confirme l'heure : ça montre que tu as bien noté."]]]]}
+];
+function shuffleIdx(n,seed){const a=[...Array(n).keys()];let s=seed;for(let i=n-1;i>0;i--){s=(s*9301+49297)%233280;const j=Math.floor(s/233280*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function renderSim(){
+  const sim=ui.sim;
+  if(!sim){
+    $("#main").innerHTML=`<div class="wrap"><div class="pagehead"><div><span class="eyebrow">Entraînement</span><h1>S'entraîner</h1><p>Choisis la meilleure réponse à chaque étape. Tu peux recommencer autant que tu veux.</p></div></div>
+      <div class="scen">${SCEN.map(s=>`<button data-sc="${s.id}"><span class="eyebrow">${esc(s.d)}</span><b>${esc(s.t)}</b><span class="best">${S.sim[s.id]!==undefined?"Meilleur score : "+S.sim[s.id]+" %":"Pas encore joué"}</span></button>`).join("")}</div>
+      <section class="panel"><h2>Avec un camarade</h2><p style="margin:0">Pour aller plus loin, jouez la scène à deux : l'un joue le responsable avec les phrases de « Si on me dit non », l'autre répond sans regarder son téléphone. Puis échangez les rôles.</p></section></div>`;
+    $("#main").querySelectorAll("[data-sc]").forEach(b=>b.onclick=()=>{ui.sim={id:b.dataset.sc,step:0,log:[],seed:Date.now()%1000};renderSim()});return}
+  const sc=SCEN.find(s=>s.id===sim.id),v=vars(null),max=sc.nodes.length*2;
+  let chat=`<div class="bub them" style="max-width:100%;background:var(--accent-soft);border:0"><span class="who">Situation</span>${esc(sc.d)}</div>`;
+  sim.log.forEach((l,i)=>{const n=sc.nodes[i];chat+=`<div class="bub them"><span class="who">${esc(sc.who)}</span>${esc(n[0])}</div><div class="bub me"><span class="who">Toi</span>${esc(plain(n[1][l][0],v))}</div><div class="fb s${n[1][l][1]}">${["✗","≈","✓"][n[1][l][1]]} ${esc(n[1][l][2])}</div>`});
+  const done=sim.step>=sc.nodes.length;
+  if(!done){const n=sc.nodes[sim.step];const ord=shuffleIdx(n[1].length,sim.seed+sim.step*7);
+    chat+=`<div class="bub them"><span class="who">${esc(sc.who)}</span>${esc(n[0])}</div><div class="lab" style="margin-top:6px">Que réponds-tu ?</div><div class="choices">${ord.map(i=>`<button data-ch="${i}">${esc(plain(n[1][i][0],v))}</button>`).join("")}</div>`}
+  else{const sc2=sim.log.reduce((a,l,i)=>a+sc.nodes[i][1][l][1],0);const pct=Math.round(sc2/max*100);
+    if(!sim.saved){const before=BADGES.filter(b=>b[3]()).map(b=>b[0]);S.sim[sc.id]=Math.max(S.sim[sc.id]||0,pct);save();sim.saved=true;const won=BADGES.filter(b=>b[3]()&&!before.includes(b[0]));if(won.length)setTimeout(()=>toast("Nouveau tampon : « "+won[0][1]+" » !"),300)}
+    chat+=`<section class="panel" style="margin-top:8px"><h2>Score : ${pct} %</h2><p style="margin:0">${pct>=90?"Excellent, tu es prêt(e) pour la vraie visite.":pct>=60?"Bien ! Relis les conseils en orange et recommence pour viser 100 %.":"Pas encore : relis « Ce que je dis » dans Préparer, puis recommence."}</p><div class="row"><button class="btn" id="again">Recommencer</button><button class="btn ghost" id="back">Autres scénarios</button></div></section>`}
+  $("#main").innerHTML=`<div class="wrap" style="max-width:720px"><div class="row" style="justify-content:space-between"><button class="btn ghost sm" id="quit">← Scénarios</button><span class="hint num">${Math.min(sim.step+1,sc.nodes.length)}/${sc.nodes.length}</span></div><h1 style="font-family:var(--f-display);font-size:1.3rem">${esc(sc.t)}</h1><div class="chat">${chat}</div></div>`;
+  $("#quit").onclick=()=>{ui.sim=null;renderSim()};
+  $("#main").querySelectorAll("[data-ch]").forEach(b=>b.onclick=()=>{sim.log.push(+b.dataset.ch);sim.step++;renderSim();const m=$("#main");m.scrollTop=m.scrollHeight});
+  const a=$("#again");a&&(a.onclick=()=>{ui.sim={id:sc.id,step:0,log:[],seed:Date.now()%1000};renderSim()});
+  const bk=$("#back");bk&&(bk.onclick=()=>{ui.sim=null;renderSim()});
+}
+
+/* ================= moi : profil, convention, export ================= */
+const CONV=[["remise","Convention remise à l'entreprise"],["entreprise","Signée par l'entreprise"],["eleve","Signée par moi et mon responsable légal"],["rendue","Rendue au lycée"],["lycee","Signée par le lycée : c'est validé"]];
+function renderMe(){
+  const np=nP();
+  $("#main").innerHTML=`<div class="wrap"><div class="pagehead"><div><span class="eyebrow">${esc(D().label)}</span><h1>${esc(P().prenom)} ${esc(P().nom||"")}</h1></div></div>
+    <section class="panel" style="border-color:color-mix(in srgb,var(--accent) 40%,var(--line))"><h2>Envoyer mon suivi au professeur</h2>
+      <p style="margin:0">Copie ton code et colle-le dans un message à ton professeur (ENT, Pronote, mail). Il voit tes démarches, pas ton téléphone.</p>
+      <div class="row"><button class="btn" id="exCode">Copier mon code de suivi</button><button class="btn ghost" id="exFile">Télécharger le fichier</button></div>
+      <span class="hint">Dernier envoi : ${S.lastExport?new Date(S.lastExport).toLocaleString("fr-FR",{dateStyle:"short",timeStyle:"short"}):"jamais"}. Envoie-le au moins une fois par semaine.</span></section>
+    ${[1,2].slice(0,np).map(n=>{const acc=acceptedFor(n);if(!acc)return "";const cv=S.conventions[n],rt=S.retours[n],t=np===2?" · période "+n:"";return `<section class="panel"><h2>Ma convention${t} · ${esc(acc.nom)} <small>${CONV.filter(x=>cv.checks[x[0]]).length}/${CONV.length}</small></h2>
+      <div class="check">${CONV.map(([k,l])=>`<label><input type="checkbox" data-cv="${k}" data-pn="${n}" ${cv.checks[k]?"checked":""}><span>${esc(l)}</span></label>`).join("")}</div>
+      <div class="grid2"><div class="fld"><label for="cv-tut-${n}">Mon tuteur (facultatif)</label><input class="inp" id="cv-tut-${n}" data-cvf="tuteur" data-pn="${n}" value="${esc(cv.tuteur)}" placeholder="Nom et fonction"></div><div class="fld"><label for="cv-h-${n}">Mes horaires</label><input class="inp" id="cv-h-${n}" data-cvf="horaires" data-pn="${n}" value="${esc(cv.horaires)}" placeholder="Ex. 9 h-17 h, du mardi au samedi"></div></div>
+      <div class="fld"><label for="cv-m-${n}">Missions prévues</label><textarea class="inp" id="cv-m-${n}" data-cvf="missions" data-pn="${n}" placeholder="Ce que l'entreprise t'a dit que tu ferais">${esc(cv.missions)}</textarea></div></section>
+      <section class="panel"><h2>Après ma PFMP${t} <small>aide les élèves de l'an prochain</small></h2>
+      <div class="fld"><span class="lab">L'accueil dans l'entreprise</span><div class="chips">${[1,2,3,4,5].map(k=>`<button class="chip" data-note="${k}" data-pn="${n}" aria-pressed="${rt.note===k}">${"★".repeat(k)}</button>`).join("")}</div></div>
+      <div class="fld"><span class="lab">Ce que j'ai vraiment fait</span><div class="refgrid">${D().acts.map(([k,l])=>`<label><input type="checkbox" data-rm="${k}" data-pn="${n}" ${rt.missions.includes(k)?"checked":""}>${esc(l)}</label>`).join("")}</div></div>
+      <div class="fld"><label for="rt-c-${n}">Mon conseil à un futur stagiaire</label><textarea class="inp" id="rt-c-${n}" data-rtc="1" data-pn="${n}" placeholder="Ex. arriver 10 minutes en avance, demander à voir la réserve le premier jour…">${esc(rt.conseil)}</textarea></div></section>`}).join("")}
+    <section class="panel"><h2>Mon profil</h2>${profileForm(P())}<button class="btn sm" id="saveProf" style="align-self:flex-start">Enregistrer</button></section>
+    <section class="panel"><h2>Réglages</h2>
+      <label class="row" style="gap:10px"><input type="checkbox" id="dys" ${S.dys?"checked":""} style="width:22px;height:22px;accent-color:var(--accent)"> Texte plus espacé (confort de lecture)</label>
+      <div class="row"><button class="btn ghost sm" id="classCode">Entrer le code de ma classe</button><button class="btn ghost sm" id="restore">Récupérer un suivi</button><button class="btn ghost sm" id="roadmap">Feuille de route imprimable</button></div>
+      ${S.config.classe?`<span class="hint">Classe : ${esc(S.config.classe)}${S.config.prof?" · "+esc(S.config.prof):""} · objectif ${S.config.objectif} entreprises, ${S.config.hebdo} démarches par semaine.</span>`:""}
+      <button class="btn ghost sm" id="wipe" style="align-self:flex-start;color:var(--danger)">Tout effacer sur ce téléphone</button></section></div>`;
+  $("#exCode").onclick=exportCode;$("#exFile").onclick=exportFile;
+  $("#main").querySelectorAll("[data-cv]").forEach(x=>x.onchange=()=>{const cv=S.conventions[x.dataset.pn];cv.checks[x.dataset.cv]=x.checked;save();renderMe();if(CONV.every(c=>cv.checks[c[0]]))toast("Convention complète : tu es prêt(e) pour ta "+pLab(+x.dataset.pn)+" !")});
+  $("#main").querySelectorAll("[data-cvf]").forEach(el=>el.oninput=()=>{S.conventions[el.dataset.pn][el.dataset.cvf]=el.value;save()});
+  $("#main").querySelectorAll("[data-note]").forEach(b=>b.onclick=()=>{S.retours[b.dataset.pn].note=+b.dataset.note;save();renderMe()});
+  $("#main").querySelectorAll("[data-rm]").forEach(x=>x.onchange=()=>{const rt=S.retours[x.dataset.pn];rt.missions=x.checked?[...new Set([...rt.missions,x.dataset.rm])]:rt.missions.filter(m=>m!==x.dataset.rm);save()});
+  $("#main").querySelectorAll("[data-rtc]").forEach(el=>el.oninput=()=>{S.retours[el.dataset.pn].conseil=el.value;save()});
+  $("#saveProf").onclick=()=>{const p=readProfile();if(!p.prenom){toast("Le prénom est obligatoire.");return}S.profile=Object.assign(S.profile||{},p);save();toast("Profil enregistré.");render()};
+  $("#dys").onchange=e=>{S.dys=e.target.checked;document.body.classList.toggle("dys",S.dys);save()};
+  $("#classCode").onclick=classCodeModal;$("#restore").onclick=restoreModal;$("#roadmap").onclick=roadmap;
+  $("#wipe").onclick=()=>confirmBox("Tout effacer ?","Ton profil, tes entreprises et tes démarches seront supprimés de ce téléphone. Envoie d'abord ton code à ton prof si tu veux le garder.","Tout effacer",()=>{S=blank();save();ui.view="home";render()},true);
+}
+
+/* ---------- codes et fichiers ---------- */
+function b64u(bytes){let s="";for(let i=0;i<bytes.length;i+=0x8000)s+=String.fromCharCode.apply(null,bytes.subarray(i,i+0x8000));return btoa(s).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"")}
+function ub64(str){str=str.replace(/-/g,"+").replace(/_/g,"/");while(str.length%4)str+="=";const b=atob(str);const u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u}
+async function pack(prefix,obj){const bytes=new TextEncoder().encode(JSON.stringify(obj));if("CompressionStream" in window){try{const s=new Blob([bytes]).stream().pipeThrough(new CompressionStream("deflate-raw"));return prefix+".Z."+b64u(new Uint8Array(await new Response(s).arrayBuffer()))}catch(e){}}return prefix+".J."+b64u(bytes)}
+async function unpack(code){const m=String(code).trim().match(/^(PFMP-[A-Z]+)\.([ZJ])\.([A-Za-z0-9_-]+)$/);if(!m)throw new Error("format");let bytes=ub64(m[3]);if(m[2]==="Z"){const s=new Blob([bytes]).stream().pipeThrough(new DecompressionStream("deflate-raw"));bytes=new Uint8Array(await new Response(s).arrayBuffer())}return {kind:m[1],data:JSON.parse(new TextDecoder().decode(bytes))}}
+function exportObj(withSig){const o=clone(S);delete o.checklist;delete o.sim;o.sims=S.sim;o.k="eleve";o.v=2;o.exportedAt=Date.now();o.convention=S.conventions[1];o.retour=S.retours[1];o.stats={points:points(),week:weekActions()};if(!withSig)o.companies.forEach(c=>{if(c.proof){c.proof.hasSig=!!c.proof.sig;delete c.proof.sig}delete c.accroche});return o}
+async function exportCode(){if(S.example){toast("C'est l'exemple : commence pour de vrai avant d'envoyer ton suivi.");return}const code=await pack("PFMP-ELEVE",exportObj(false));S.lastExport=Date.now();save();
+  modal(`<h3>Ton code de suivi</h3><p style="margin:0">Colle ce code dans un message à ton professeur. Il contient tes entreprises et tes démarches.</p><div class="code" id="codeBox">${esc(code)}</div><div class="acts"><button class="btn ghost" data-x>Fermer</button><button class="btn" data-c>Copier le code</button></div>`,close=>{$("#mbox [data-x]").onclick=close;$("#mbox [data-c]").onclick=()=>copy(code,"Code copié : colle-le dans un message à ton prof.")});
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(code).then(()=>toast("Code copié : colle-le dans un message à ton prof."),()=>{})}
+let dl=null;
+async function saveFile(name,data,type){if(dl){try{await dl.save({filename:name,data});toast("Fichier enregistré.");return true}catch(e){if(e&&e.code==="declined")return false}}
+  if(!inFrame){try{const u=URL.createObjectURL(new Blob([data],{type}));const a=document.createElement("a");a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);toast("Fichier téléchargé.");return true}catch(e){}}
+  toast("Le téléchargement n'est pas possible ici : utilise « Copier mon code ».");return false}
+async function exportFile(){if(S.example){toast("C'est l'exemple : commence pour de vrai avant d'envoyer ton suivi.");return}const p=P();const ok=await saveFile(`pfmp-${norm(p.prenom+" "+(p.nom||"")).replace(/ /g,"-")}-${today()}.json`,JSON.stringify(exportObj(true)),"application/json");if(ok){S.lastExport=Date.now();save();renderMe()}}
+function classCodeModal(){modal(`<h3>Code de ma classe</h3><p style="margin:0">Colle le code que ton professeur t'a donné. Il règle tes dates de PFMP, tes objectifs et ajoute les entreprises partenaires du lycée.</p><textarea class="inp" id="ccIn" placeholder="PFMP-CLASSE…" style="font-family:var(--f-mono);font-size:.8rem"></textarea><div class="acts"><button class="btn ghost" data-x>Annuler</button><button class="btn" data-ok>Valider</button></div>`,close=>{
+  $("#mbox [data-x]").onclick=close;
+  $("#mbox [data-ok]").onclick=async()=>{try{const r=await unpack($("#ccIn").value.replace(/\s+/g,""));if(r.kind!=="PFMP-CLASSE")throw 0;const d=r.data;
+    Object.assign(S.config,{classe:d.classe||"",prof:d.prof||"",lycee:d.lycee||"",pfmpStart:d.pfmpStart||"",pfmpEnd:d.pfmpEnd||"",periodes:+d.periodes===2?2:1,pfmp2Start:d.pfmp2Start||"",pfmp2End:d.pfmp2End||"",objectif:+d.objectif||20,hebdo:+d.hebdo||5,partners:Array.isArray(d.partners)?d.partners:[]});if(d.relance)Object.assign(S.config.relance,d.relance);
+    if(S.profile){if(d.pfmpStart)S.profile.pfmpStart=d.pfmpStart;if(d.pfmpEnd)S.profile.pfmpEnd=d.pfmpEnd;if(d.pfmp2Start)S.profile.pfmp2Start=d.pfmp2Start;if(d.pfmp2End)S.profile.pfmp2End=d.pfmp2End;if(d.periodes)S.profile.periodes=+d.periodes===2?2:1;if(d.classe&&!S.profile.classe)S.profile.classe=d.classe;if(d.lycee&&!S.profile.lycee)S.profile.lycee=d.lycee;if(d.diplome&&DIPLOMES[d.diplome])S.profile.diplome=d.diplome}
+    save();close();toast(`Code accepté : classe ${d.classe||""}, ${S.config.partners.length} entreprise(s) partenaire(s).`);render();
+    if(!S.profile){if(d.diplome&&DIPLOMES[d.diplome])$("#p-dip").value=d.diplome;if(d.classe)$("#p-classe").value=d.classe;if(d.lycee)$("#p-lycee").value=d.lycee;if(d.pfmpStart)$("#p-start").value=d.pfmpStart;if(d.pfmpEnd)$("#p-end").value=d.pfmpEnd;if(d.pfmp2Start)$("#p-start2").value=d.pfmp2Start;if(d.pfmp2End)$("#p-end2").value=d.pfmp2End}
+  }catch(e){toast("Ce code n'est pas reconnu. Vérifie que tu l'as copié en entier.")}}})}
+function restoreModal(){modal(`<h3>Récupérer mon suivi</h3><p style="margin:0">Colle un code de suivi que tu avais copié, ou choisis le fichier téléchargé. Ce que tu as sur ce téléphone sera remplacé.</p><textarea class="inp" id="rsIn" placeholder="PFMP-ELEVE…" style="font-family:var(--f-mono);font-size:.8rem"></textarea><div class="acts"><button class="btn ghost" data-file>Choisir un fichier</button><button class="btn" data-ok>Récupérer</button></div>`,close=>{
+  const apply=d=>{if(!d||d.k!=="eleve"||!Array.isArray(d.companies)){toast("Ce n'est pas un suivi Cap PFMP.");return}d.sim=d.sims||{};delete d.sims;delete d.k;delete d.stats;delete d.exportedAt;S=d;fix(S);S.example=false;save();close();ui.view="home";render();toast("Suivi récupéré.")};
+  $("#mbox [data-ok]").onclick=async()=>{try{const r=await unpack($("#rsIn").value.replace(/\s+/g,""));if(r.kind!=="PFMP-ELEVE")throw 0;apply(r.data)}catch(e){toast("Ce code n'est pas reconnu.")}};
+  $("#mbox [data-file]").onclick=()=>{const fi=$("#fileIn");fi.onchange=()=>{const f=fi.files[0];fi.value="";if(!f)return;const fr=new FileReader();fr.onload=async()=>{const t=String(fr.result).trim();try{if(t.startsWith("PFMP-")){const r=await unpack(t.replace(/\s+/g,""));apply(r.data)}else apply(JSON.parse(t))}catch(e){toast("Fichier illisible.")}};fr.readAsText(f)};fi.click()}})}
+function roadmap(){const p=P(),{start,end}=per(1),p2=per(2);
+  const rows=S.companies.map(c=>{const last=c.events[c.events.length-1];return `<tr><td>${esc(c.nom)}<br><small>${esc(c.ville||"")}${nP()===2?" · période "+cPer(c):""}</small></td><td>${last?fd(last.date):""}</td><td>${esc(STATUS[cStatus(c)])}</td><td style="height:64px"></td></tr>`}).join("")+Array(Math.max(0,8-S.companies.length)).fill('<tr><td style="height:64px"></td><td></td><td></td><td></td></tr>').join("");
+  const html=`<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Feuille de route PFMP</title><style>body{font-family:Arial,sans-serif;margin:24px;color:#111}h1{font-size:20px;margin:0 0 4px}p{margin:2px 0}table{width:100%;border-collapse:collapse;margin-top:14px}th,td{border:1px solid #444;padding:6px;font-size:13px;vertical-align:top;text-align:left}th{background:#eee}small{color:#555}@media print{button{display:none}}</style></head><body><button onclick="window.print()" style="float:right;padding:8px 14px">Imprimer</button><h1>Feuille de route · recherche de PFMP</h1><p><b>${esc((p.prenom+" "+(p.nom||"")).trim())}</b> · ${esc(p.classe||"")} · ${esc(p.lycee||"")}</p><p>${esc(D().long)}${start?` · PFMP${nP()===2?" 1":""} du ${fdl(start)} au ${fdl(end)}`:""}${nP()===2&&p2.start?` · PFMP 2 du ${fdl(p2.start)} au ${fdl(p2.end)}`:""}</p><p style="margin-top:8px"><small>Madame, Monsieur, merci d'indiquer votre réponse et d'apposer votre signature ou le cachet de l'entreprise. Ce document atteste des démarches de l'élève.</small></p><table><thead><tr><th style="width:30%">Entreprise</th><th style="width:14%">Date</th><th style="width:18%">Réponse</th><th>Signature ou cachet</th></tr></thead><tbody>${rows}</tbody></table></body></html>`;
+  if(!inFrame){const w=window.open("","_blank");if(w){w.document.write(html);w.document.close();return}}
+  saveFile(`feuille-de-route-pfmp-${norm(p.prenom).replace(/ /g,"-")}.html`,html,"text/html").then(ok=>{if(ok)toast("Ouvre le fichier puis imprime-le, ou envoie-le à ton prof.")})}
+
+/* ================= démarrage ================= */
+window.addEventListener("resize",()=>{clearTimeout(window.__r);window.__r=setTimeout(()=>{if(ui.view==="shops")renderShops()},200)});
+render();
+(async()=>{try{if(window.claude&&typeof window.claude.use==="function"){dl=await window.claude.use("downloads")}}catch(e){dl=null}})();
+})();
+</script>
+
+</body></html>
